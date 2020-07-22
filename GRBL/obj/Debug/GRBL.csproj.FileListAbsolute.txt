@@ -1,0 +1,5 @@
+D:\Wooden Vision\WoodCharp\Code\Visual Studio\GRBL Framework\GRBL Framework\GRBL\bin\Debug\GRBL.dll
+D:\Wooden Vision\WoodCharp\Code\Visual Studio\GRBL Framework\GRBL Framework\GRBL\bin\Debug\GRBL.pdb
+D:\Wooden Vision\WoodCharp\Code\Visual Studio\GRBL Framework\GRBL Framework\GRBL\obj\Debug\GRBL.csproj.CoreCompileInputs.cache
+D:\Wooden Vision\WoodCharp\Code\Visual Studio\GRBL Framework\GRBL Framework\GRBL\obj\Debug\GRBL.dll
+D:\Wooden Vision\WoodCharp\Code\Visual Studio\GRBL Framework\GRBL Framework\GRBL\obj\Debug\GRBL.pdb
