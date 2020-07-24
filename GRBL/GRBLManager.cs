@@ -37,6 +37,10 @@ namespace GRBL
 
         public RichTextBox ConsoleBox;
 
+        /// <summary>
+        /// Adds line to console(rich text box)
+        /// </summary>
+        /// <param name="line"></param>
         public void LineToConsole(string line)
         {
             if (ConsoleBox != null)
@@ -72,6 +76,10 @@ namespace GRBL
             return serialPort.IsOpen;
         }
 
+        /// <summary>
+        /// Open serial connection to GRBL
+        /// </summary>
+        /// <param name="portData">Serial port information</param>
         public void OpenSerialPort(PortData portData)
         {
             if (IsSerialConnected())
@@ -87,6 +95,9 @@ namespace GRBL
             queryTimer.Start();
         }
 
+        /// <summary>
+        /// Close serial connection to GRBL
+        /// </summary>
         public void CloseSerialPort()
         {
             if(serialPort != null && IsSerialConnected())
@@ -96,6 +107,11 @@ namespace GRBL
             }
         }
 
+        /// <summary>
+        /// send line to GRBL
+        /// </summary>
+        /// <param name="line">line to be sent</param>
+        /// <param name="sendToConsole">if true add line to console(rich text box)</param>
         public void SendLine(string line, bool sendToConsole)
         {
             if(IsSerialConnected() && line.Length > 0)
@@ -273,6 +289,9 @@ namespace GRBL
         public Action VerOptScanFinished;
         public string ScannedVER, ScannedOPT;
 
+        /// <summary>
+        /// Starts settings scan
+        /// </summary>
         public void ScanGRBLSettings()
         {
             if(IsSerialConnected())
@@ -283,6 +302,9 @@ namespace GRBL
             }
         }
 
+        /// <summary>
+        /// Starts VER and OPT scan
+        /// </summary>
         public void ScanVerOpt()
         {
             VerOptScan = true;
@@ -501,7 +523,9 @@ namespace GRBL
             }
         }
 
-
+        /// <summary>
+        /// Triggers safety door warning
+        /// </summary>
         public void TriggerSafetyDoorWarning()
         {
             if (IsSerialConnected())
@@ -699,6 +723,10 @@ namespace GRBL
         public float OverrideRapid = 100;
         public float OverrideSpindle = 100;
 
+        /// <summary>
+        /// Updates position
+        /// </summary>
+        /// <param name="rxData"></param>
         private void UpdatePosition(string rxData)
         {
             try
@@ -759,6 +787,11 @@ namespace GRBL
             catch { }
         }
 
+        /// <summary>
+        /// Returns machine state from rx data
+        /// </summary>
+        /// <param name="RX_DATA"></param>
+        /// <returns></returns>
         public eMachineState GetMachineStatus(string RX_DATA)
         {
             RX_DATA = RX_DATA.Split('<', '|')[1];
@@ -796,6 +829,53 @@ namespace GRBL
             }
         }
 
+        /// <summary>
+        /// Moves one axis with incremental command
+        /// </summary>
+        /// <param name="axis">axis to move</param>
+        /// <param name="G0">move with G0 or G1 ?</param>
+        /// <param name="distance">distance to be moved, can also be negative value</param>
+        /// <param name="feedRate">specify feed rate if G1 is used</param>
+        public void MoveSingleAxis(eAxis axis, bool G0, float distance, int feedRate)
+        {
+            if(G0)
+                SendLine(string.Format("G0G91{0}{1}", axis.ToString(), Converters.DotToGRBL(distance)), true);
+            else
+                SendLine(string.Format("G1G91{0}{1}F{2}", axis.ToString(), Converters.DotToGRBL(distance), feedRate), true);
+        }
+
+        /// <summary>
+        /// Moves X and Y axis with incremental command
+        /// </summary>
+        /// <param name="G0">move with G0 or G1 ?</param>
+        /// <param name="distanceX">distance to be moved along X axis, can also be negative value</param>
+        /// <param name="distanceY">distance to be moved along Y axis, can also be negative value</param>
+        /// <param name="feedRate">specify feed rate if G1 is used</param>
+        public void MoveTwoAxis(bool G0, float distanceX, float distanceY, int feedRate)
+        {
+            if (G0)
+                SendLine(string.Format("G0G91X{0}Y{1}", Converters.DotToGRBL(distanceX), Converters.DotToGRBL(distanceY)), true);
+            else
+                SendLine(string.Format("G1G91X{0}Y{1}F{2}", Converters.DotToGRBL(distanceX), Converters.DotToGRBL(distanceY), feedRate), true);
+        }
+
+        /// <summary>
+        /// Moves chosen axis to zero point with G0 command
+        /// </summary>
+        /// <param name="axis">axis to move</param>
+        public void MoveToZero_SingleAxis(eAxis axis)
+        {
+            SendLine(string.Format("G0{0}0", axis), true);
+        }
+
+        /// <summary>
+        /// Moves X and Y axis to zero point with G0 command
+        /// </summary>
+        public void MoveToZero_TwoAxis()
+        {
+            SendLine("G0X0Y0", true);
+        }
+
         #endregion
 
         #region Jogging
@@ -808,12 +888,18 @@ namespace GRBL
         private int JoggingInterval = 500;
         private bool Jogging = false, nextJog = false;
 
+        /// <summary>
+        /// Sets up start and end actions
+        /// </summary>
         public void InitializeJoggingKnob()
         {
             joggingKnob.StartJogging = new Action(StartJoggin);
             joggingKnob.StopJogging = new Action(StopJogging);
         }
 
+        /// <summary>
+        /// Start jogging
+        /// </summary>
         public void StartJoggin()
         {
             Jogging = true;
@@ -835,6 +921,9 @@ namespace GRBL
             }
         }
 
+        /// <summary>
+        /// Stop jogging
+        /// </summary>
         public void StopJogging()
         {
             JoggingTimer.Stop();
@@ -842,7 +931,7 @@ namespace GRBL
             JogCancel();
         }
 
-        private void Jog()
+        private void JoggingTimer_Tick(object sender, EventArgs e)
         {
             if (EnableJoggingKnob && nextJog)
             {
@@ -851,16 +940,11 @@ namespace GRBL
 
                 if (xjog == 0 && yjog == 0)
                     return;
-                
+
                 SendLine(string.Format("$J=G91G21X{0}Y{1}F{2}", xjog, yjog, JoggingFeedRate), false);
 
                 nextJog = false;
             }
-        }
-
-        private void JoggingTimer_Tick(object sender, EventArgs e)
-        {
-            Jog();
         }
 
         #endregion

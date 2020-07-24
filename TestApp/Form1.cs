@@ -85,6 +85,7 @@ namespace TestApp
             joggingKnob1.Enabled = enable;
             btn_startResume.Enabled = enable;
             btn_hold.Enabled = enable;
+            groupBox_moveButtons.Enabled = enable;
         }
 
         #region Connection
@@ -275,13 +276,98 @@ namespace TestApp
         #endregion
 
 
-        //Button for testing things
-        private void button1_Click(object sender, EventArgs e)
+        private void btn_x0y0_Click(object sender, EventArgs e)
         {
-            char[] letters =  GRBLFramework.ParseOPTCodesFromScanned();
+            GRBLFramework.MoveToZero_TwoAxis();
+        }
 
-            foreach (char c in letters)
-                MessageBox.Show(c.ToString());
+        private void btn_z0_Click(object sender, EventArgs e)
+        {
+            GRBLFramework.MoveToZero_SingleAxis(eAxis.Z);
+        }
+
+
+        private void btn_Xp_Click(object sender, EventArgs e)
+        {
+            GRBLFramework.MoveSingleAxis(eAxis.X, radioButton_g0.Checked, 
+                float.Parse(Converters.DotToFloat(textBox_distance.Text)), int.Parse(textBox_feedRate.Text));
+        }
+
+        private void btn_XpYp_Click(object sender, EventArgs e)
+        {
+            GRBLFramework.MoveTwoAxis(radioButton_g0.Checked,
+                float.Parse(Converters.DotToFloat(textBox_distance.Text)),
+                float.Parse(Converters.DotToFloat(textBox_distance.Text)),
+                int.Parse(textBox_feedRate.Text));
+        }
+
+        private void btn_Yp_Click(object sender, EventArgs e)
+        {
+            GRBLFramework.MoveSingleAxis(eAxis.Y, radioButton_g0.Checked,
+                float.Parse(Converters.DotToFloat(textBox_distance.Text)), int.Parse(textBox_feedRate.Text));
+        }
+
+        private void btn_XmYp_Click(object sender, EventArgs e)
+        {
+            GRBLFramework.MoveTwoAxis(radioButton_g0.Checked,
+                -float.Parse(Converters.DotToFloat(textBox_distance.Text)),
+                float.Parse(Converters.DotToFloat(textBox_distance.Text)),
+                int.Parse(textBox_feedRate.Text));
+        }
+
+        private void btn_Xm_Click(object sender, EventArgs e)
+        {
+            GRBLFramework.MoveSingleAxis(eAxis.X, radioButton_g0.Checked,
+                -float.Parse(Converters.DotToFloat(textBox_distance.Text)), int.Parse(textBox_feedRate.Text));
+        }
+
+        private void btn_XmYm_Click(object sender, EventArgs e)
+        {
+            GRBLFramework.MoveTwoAxis(radioButton_g0.Checked,
+                -float.Parse(Converters.DotToFloat(textBox_distance.Text)),
+                -float.Parse(Converters.DotToFloat(textBox_distance.Text)),
+                int.Parse(textBox_feedRate.Text));
+        }
+
+        private void btn_Ym_Click(object sender, EventArgs e)
+        {
+            GRBLFramework.MoveSingleAxis(eAxis.Y, radioButton_g0.Checked,
+                -float.Parse(Converters.DotToFloat(textBox_distance.Text)), int.Parse(textBox_feedRate.Text));
+        }
+
+        private void btn_XpYm_Click(object sender, EventArgs e)
+        {
+            GRBLFramework.MoveTwoAxis(radioButton_g0.Checked,
+                float.Parse(Converters.DotToFloat(textBox_distance.Text)),
+                -float.Parse(Converters.DotToFloat(textBox_distance.Text)),
+                int.Parse(textBox_feedRate.Text));
+        }
+
+        private void btn_Zp_Click(object sender, EventArgs e)
+        {
+            GRBLFramework.MoveSingleAxis(eAxis.Z, radioButton_g0.Checked,
+                float.Parse(Converters.DotToFloat(textBox_distance.Text)), int.Parse(textBox_feedRate.Text));
+        }
+
+        private void btn_Zm_Click(object sender, EventArgs e)
+        {
+            GRBLFramework.MoveSingleAxis(eAxis.Z, radioButton_g0.Checked,
+                -float.Parse(Converters.DotToFloat(textBox_distance.Text)), int.Parse(textBox_feedRate.Text));
+        }
+
+
+        private void textBox_feedRate_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            e.Handled = !char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar);
+        }
+
+        private void textBox_distance_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != '.'))
+                e.Handled = true;
+
+            if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
+                e.Handled = true;
         }
     }
 }

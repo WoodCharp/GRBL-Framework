@@ -85,8 +85,28 @@
             this.l_opt = new System.Windows.Forms.Label();
             this.checkBox_lockX = new System.Windows.Forms.CheckBox();
             this.checkBox_lockY = new System.Windows.Forms.CheckBox();
+            this.btn_Xm = new System.Windows.Forms.Button();
+            this.btn_Xp = new System.Windows.Forms.Button();
+            this.btn_XmYp = new System.Windows.Forms.Button();
+            this.btn_Yp = new System.Windows.Forms.Button();
+            this.btn_XpYp = new System.Windows.Forms.Button();
+            this.btn_XmYm = new System.Windows.Forms.Button();
+            this.btn_Ym = new System.Windows.Forms.Button();
+            this.btn_XpYm = new System.Windows.Forms.Button();
+            this.btn_Zm = new System.Windows.Forms.Button();
+            this.btn_Zp = new System.Windows.Forms.Button();
+            this.textBox_distance = new System.Windows.Forms.TextBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.radioButton_g0 = new System.Windows.Forms.RadioButton();
+            this.radioButton_g1 = new System.Windows.Forms.RadioButton();
+            this.label8 = new System.Windows.Forms.Label();
+            this.textBox_feedRate = new System.Windows.Forms.TextBox();
+            this.groupBox_moveButtons = new System.Windows.Forms.GroupBox();
+            this.btn_x0y0 = new System.Windows.Forms.Button();
+            this.btn_z0 = new System.Windows.Forms.Button();
             this.joggingKnob1 = new GRBL.Controls.JoggingKnob();
             this.groupBox1.SuspendLayout();
+            this.groupBox_moveButtons.SuspendLayout();
             this.SuspendLayout();
             // 
             // label_machineStatus
@@ -684,6 +704,211 @@
             this.checkBox_lockY.UseVisualStyleBackColor = true;
             this.checkBox_lockY.CheckedChanged += new System.EventHandler(this.checkBox_lockY_CheckedChanged);
             // 
+            // btn_Xm
+            // 
+            this.btn_Xm.Location = new System.Drawing.Point(6, 86);
+            this.btn_Xm.Name = "btn_Xm";
+            this.btn_Xm.Size = new System.Drawing.Size(50, 50);
+            this.btn_Xm.TabIndex = 45;
+            this.btn_Xm.Text = "X-";
+            this.btn_Xm.UseVisualStyleBackColor = true;
+            this.btn_Xm.Click += new System.EventHandler(this.btn_Xm_Click);
+            // 
+            // btn_Xp
+            // 
+            this.btn_Xp.Location = new System.Drawing.Point(119, 86);
+            this.btn_Xp.Name = "btn_Xp";
+            this.btn_Xp.Size = new System.Drawing.Size(50, 50);
+            this.btn_Xp.TabIndex = 46;
+            this.btn_Xp.Text = "X+";
+            this.btn_Xp.UseVisualStyleBackColor = true;
+            this.btn_Xp.Click += new System.EventHandler(this.btn_Xp_Click);
+            // 
+            // btn_XmYp
+            // 
+            this.btn_XmYp.Location = new System.Drawing.Point(6, 30);
+            this.btn_XmYp.Name = "btn_XmYp";
+            this.btn_XmYp.Size = new System.Drawing.Size(50, 50);
+            this.btn_XmYp.TabIndex = 47;
+            this.btn_XmYp.Text = "X-Y+";
+            this.btn_XmYp.UseVisualStyleBackColor = true;
+            this.btn_XmYp.Click += new System.EventHandler(this.btn_XmYp_Click);
+            // 
+            // btn_Yp
+            // 
+            this.btn_Yp.Location = new System.Drawing.Point(62, 30);
+            this.btn_Yp.Name = "btn_Yp";
+            this.btn_Yp.Size = new System.Drawing.Size(50, 50);
+            this.btn_Yp.TabIndex = 48;
+            this.btn_Yp.Text = "Y+";
+            this.btn_Yp.UseVisualStyleBackColor = true;
+            this.btn_Yp.Click += new System.EventHandler(this.btn_Yp_Click);
+            // 
+            // btn_XpYp
+            // 
+            this.btn_XpYp.Location = new System.Drawing.Point(119, 30);
+            this.btn_XpYp.Name = "btn_XpYp";
+            this.btn_XpYp.Size = new System.Drawing.Size(50, 50);
+            this.btn_XpYp.TabIndex = 49;
+            this.btn_XpYp.Text = "X+Y+";
+            this.btn_XpYp.UseVisualStyleBackColor = true;
+            this.btn_XpYp.Click += new System.EventHandler(this.btn_XpYp_Click);
+            // 
+            // btn_XmYm
+            // 
+            this.btn_XmYm.Location = new System.Drawing.Point(6, 142);
+            this.btn_XmYm.Name = "btn_XmYm";
+            this.btn_XmYm.Size = new System.Drawing.Size(50, 50);
+            this.btn_XmYm.TabIndex = 50;
+            this.btn_XmYm.Text = "X-Y-";
+            this.btn_XmYm.UseVisualStyleBackColor = true;
+            this.btn_XmYm.Click += new System.EventHandler(this.btn_XmYm_Click);
+            // 
+            // btn_Ym
+            // 
+            this.btn_Ym.Location = new System.Drawing.Point(62, 142);
+            this.btn_Ym.Name = "btn_Ym";
+            this.btn_Ym.Size = new System.Drawing.Size(50, 50);
+            this.btn_Ym.TabIndex = 51;
+            this.btn_Ym.Text = "Y-";
+            this.btn_Ym.UseVisualStyleBackColor = true;
+            this.btn_Ym.Click += new System.EventHandler(this.btn_Ym_Click);
+            // 
+            // btn_XpYm
+            // 
+            this.btn_XpYm.Location = new System.Drawing.Point(119, 142);
+            this.btn_XpYm.Name = "btn_XpYm";
+            this.btn_XpYm.Size = new System.Drawing.Size(50, 50);
+            this.btn_XpYm.TabIndex = 52;
+            this.btn_XpYm.Text = "X+Y-";
+            this.btn_XpYm.UseVisualStyleBackColor = true;
+            this.btn_XpYm.Click += new System.EventHandler(this.btn_XpYm_Click);
+            // 
+            // btn_Zm
+            // 
+            this.btn_Zm.Location = new System.Drawing.Point(175, 142);
+            this.btn_Zm.Name = "btn_Zm";
+            this.btn_Zm.Size = new System.Drawing.Size(50, 50);
+            this.btn_Zm.TabIndex = 54;
+            this.btn_Zm.Text = "Z-";
+            this.btn_Zm.UseVisualStyleBackColor = true;
+            this.btn_Zm.Click += new System.EventHandler(this.btn_Zm_Click);
+            // 
+            // btn_Zp
+            // 
+            this.btn_Zp.Location = new System.Drawing.Point(175, 30);
+            this.btn_Zp.Name = "btn_Zp";
+            this.btn_Zp.Size = new System.Drawing.Size(50, 50);
+            this.btn_Zp.TabIndex = 53;
+            this.btn_Zp.Text = "Z+";
+            this.btn_Zp.UseVisualStyleBackColor = true;
+            this.btn_Zp.Click += new System.EventHandler(this.btn_Zp_Click);
+            // 
+            // textBox_distance
+            // 
+            this.textBox_distance.Location = new System.Drawing.Point(125, 198);
+            this.textBox_distance.Name = "textBox_distance";
+            this.textBox_distance.Size = new System.Drawing.Size(100, 20);
+            this.textBox_distance.TabIndex = 55;
+            this.textBox_distance.Text = "10";
+            this.textBox_distance.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox_distance_KeyPress);
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(70, 201);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(49, 13);
+            this.label7.TabIndex = 56;
+            this.label7.Text = "Distance";
+            // 
+            // radioButton_g0
+            // 
+            this.radioButton_g0.AutoSize = true;
+            this.radioButton_g0.Checked = true;
+            this.radioButton_g0.Location = new System.Drawing.Point(25, 201);
+            this.radioButton_g0.Name = "radioButton_g0";
+            this.radioButton_g0.Size = new System.Drawing.Size(39, 17);
+            this.radioButton_g0.TabIndex = 57;
+            this.radioButton_g0.TabStop = true;
+            this.radioButton_g0.Text = "G0";
+            this.radioButton_g0.UseVisualStyleBackColor = true;
+            // 
+            // radioButton_g1
+            // 
+            this.radioButton_g1.AutoSize = true;
+            this.radioButton_g1.Location = new System.Drawing.Point(25, 225);
+            this.radioButton_g1.Name = "radioButton_g1";
+            this.radioButton_g1.Size = new System.Drawing.Size(39, 17);
+            this.radioButton_g1.TabIndex = 58;
+            this.radioButton_g1.Text = "G1";
+            this.radioButton_g1.UseVisualStyleBackColor = true;
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(70, 227);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(52, 13);
+            this.label8.TabIndex = 60;
+            this.label8.Text = "Feed rate";
+            // 
+            // textBox_feedRate
+            // 
+            this.textBox_feedRate.Location = new System.Drawing.Point(125, 224);
+            this.textBox_feedRate.Name = "textBox_feedRate";
+            this.textBox_feedRate.Size = new System.Drawing.Size(100, 20);
+            this.textBox_feedRate.TabIndex = 59;
+            this.textBox_feedRate.Text = "250";
+            this.textBox_feedRate.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox_feedRate_KeyPress);
+            // 
+            // groupBox_moveButtons
+            // 
+            this.groupBox_moveButtons.Controls.Add(this.btn_z0);
+            this.groupBox_moveButtons.Controls.Add(this.btn_x0y0);
+            this.groupBox_moveButtons.Controls.Add(this.btn_XmYp);
+            this.groupBox_moveButtons.Controls.Add(this.label8);
+            this.groupBox_moveButtons.Controls.Add(this.btn_Xm);
+            this.groupBox_moveButtons.Controls.Add(this.textBox_feedRate);
+            this.groupBox_moveButtons.Controls.Add(this.btn_Xp);
+            this.groupBox_moveButtons.Controls.Add(this.radioButton_g1);
+            this.groupBox_moveButtons.Controls.Add(this.btn_Yp);
+            this.groupBox_moveButtons.Controls.Add(this.radioButton_g0);
+            this.groupBox_moveButtons.Controls.Add(this.btn_XpYp);
+            this.groupBox_moveButtons.Controls.Add(this.label7);
+            this.groupBox_moveButtons.Controls.Add(this.btn_XmYm);
+            this.groupBox_moveButtons.Controls.Add(this.textBox_distance);
+            this.groupBox_moveButtons.Controls.Add(this.btn_Ym);
+            this.groupBox_moveButtons.Controls.Add(this.btn_Zm);
+            this.groupBox_moveButtons.Controls.Add(this.btn_XpYm);
+            this.groupBox_moveButtons.Controls.Add(this.btn_Zp);
+            this.groupBox_moveButtons.Location = new System.Drawing.Point(485, 26);
+            this.groupBox_moveButtons.Name = "groupBox_moveButtons";
+            this.groupBox_moveButtons.Size = new System.Drawing.Size(251, 265);
+            this.groupBox_moveButtons.TabIndex = 61;
+            this.groupBox_moveButtons.TabStop = false;
+            this.groupBox_moveButtons.Text = "Move";
+            // 
+            // btn_x0y0
+            // 
+            this.btn_x0y0.Location = new System.Drawing.Point(62, 85);
+            this.btn_x0y0.Name = "btn_x0y0";
+            this.btn_x0y0.Size = new System.Drawing.Size(50, 50);
+            this.btn_x0y0.TabIndex = 61;
+            this.btn_x0y0.Text = "G0 X0 Y0";
+            this.btn_x0y0.UseVisualStyleBackColor = true;
+            this.btn_x0y0.Click += new System.EventHandler(this.btn_x0y0_Click);
+            // 
+            // btn_z0
+            // 
+            this.btn_z0.Location = new System.Drawing.Point(175, 86);
+            this.btn_z0.Name = "btn_z0";
+            this.btn_z0.Size = new System.Drawing.Size(50, 50);
+            this.btn_z0.TabIndex = 62;
+            this.btn_z0.Text = "G0 Z0";
+            this.btn_z0.UseVisualStyleBackColor = true;
+            this.btn_z0.Click += new System.EventHandler(this.btn_z0_Click);
+            // 
             // joggingKnob1
             // 
             this.joggingKnob1.Enabled = false;
@@ -698,6 +923,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(748, 705);
+            this.Controls.Add(this.groupBox_moveButtons);
             this.Controls.Add(this.checkBox_lockY);
             this.Controls.Add(this.checkBox_lockX);
             this.Controls.Add(this.l_opt);
@@ -748,6 +974,8 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.groupBox_moveButtons.ResumeLayout(false);
+            this.groupBox_moveButtons.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -812,6 +1040,25 @@
         private System.Windows.Forms.Label l_opt;
         private System.Windows.Forms.CheckBox checkBox_lockX;
         private System.Windows.Forms.CheckBox checkBox_lockY;
+        private System.Windows.Forms.Button btn_Xm;
+        private System.Windows.Forms.Button btn_Xp;
+        private System.Windows.Forms.Button btn_XmYp;
+        private System.Windows.Forms.Button btn_Yp;
+        private System.Windows.Forms.Button btn_XpYp;
+        private System.Windows.Forms.Button btn_XmYm;
+        private System.Windows.Forms.Button btn_Ym;
+        private System.Windows.Forms.Button btn_XpYm;
+        private System.Windows.Forms.Button btn_Zm;
+        private System.Windows.Forms.Button btn_Zp;
+        private System.Windows.Forms.TextBox textBox_distance;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.RadioButton radioButton_g0;
+        private System.Windows.Forms.RadioButton radioButton_g1;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.TextBox textBox_feedRate;
+        private System.Windows.Forms.GroupBox groupBox_moveButtons;
+        private System.Windows.Forms.Button btn_z0;
+        private System.Windows.Forms.Button btn_x0y0;
     }
 }
 
