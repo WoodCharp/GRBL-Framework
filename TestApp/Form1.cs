@@ -17,13 +17,24 @@ namespace TestApp
         public GRBLManager GRBLFramework => GRBLManager.Instance;
 
         private PortData port;
+        private OpenFileDialog ofd;
+        private Form_ToolChange toolChangeWindow;
 
+        private bool ToolChangeWindowVisible = false;
 
         public Form1()
         {
             InitializeComponent();
 
+            toolChangeWindow = new Form_ToolChange();
+
             port = new PortData("COM3", 115200);
+
+            ofd = new OpenFileDialog();
+            ofd.Multiselect = false;
+            ofd.Title = "Select file";
+            ofd.Filter = "All Files(*.*)|*.*";
+
 
             GRBLFramework.ConsoleBox = richTextBox_console;
             GRBLFramework.CurrentForm = this;
@@ -64,6 +75,24 @@ namespace TestApp
             l_ovSpindle.Text = GRBLFramework.OverrideSpindle.ToString();
 
             label_machineStatus.Text = GRBLFramework.MachineState.ToString();
+
+            if(GRBLFramework.SendingFile)
+            {
+                label_percentage.Text = string.Format("{0}%", GRBLFramework.FileSentPercentage);
+                progressBar1.Value = (int)GRBLFramework.FileSentPercentage;
+            }
+
+            if(GRBLFramework.DoToolChange && GRBLFramework.MachineState == eMachineState.Idle && !ToolChangeWindowVisible)
+            {
+                ToolChangeWindowVisible = true;
+
+                toolChangeWindow.ToolInfo = GRBLFramework.CurrentToolID.ToString();
+                toolChangeWindow.ShowDialog();
+
+                GRBLFramework.ToolChanged();
+
+                ToolChangeWindowVisible = false;
+            }
         }
 
 
@@ -86,12 +115,24 @@ namespace TestApp
             btn_startResume.Enabled = enable;
             btn_hold.Enabled = enable;
             groupBox_moveButtons.Enabled = enable;
+
+            btn_openFile.Enabled = enable;
+
+            if(!enable)
+            {
+                btn_stopFile.Enabled = false;
+                btn_sendFile.Enabled = false;
+                btn_openFile.Enabled = false;
+            }
+
+            btn_touchThePlate.Enabled = enable;
         }
 
         #region Connection
 
         private void btn_connect_Click(object sender, EventArgs e)
         {
+            comboBox_rapidAmmount.SelectedIndex = 0;
             //Open port
             GRBLFramework.OpenSerialPort(port);
             //Enable buttons
@@ -104,7 +145,6 @@ namespace TestApp
             //Reset override values
             GRBLFramework.FeedRateOverrideReset();
             GRBLFramework.SpindleOverrideReset();
-            comboBox_rapidAmmount.SelectedIndex = 0;
         }
 
         private void button_disconnect_Click(object sender, EventArgs e)
@@ -115,6 +155,7 @@ namespace TestApp
 
             GRBLFramework.CloseSerialPort();
 
+            label_machineStatus.Text = "Disconnected";
         }
 
         #endregion
@@ -224,6 +265,11 @@ namespace TestApp
             l_opt.Text = string.Format("OPT: {0}", GRBLFramework.ScannedOPT);
         }
 
+        private void btn_touchThePlate_Click(object sender, EventArgs e)
+        {
+            GRBLFramework.ToutchThePlate(-10.0f, 100, 10.0f);
+        }
+
         #endregion
 
         #region Console
@@ -275,6 +321,7 @@ namespace TestApp
 
         #endregion
 
+        #region Move
 
         private void btn_x0y0_Click(object sender, EventArgs e)
         {
@@ -369,5 +416,39 @@ namespace TestApp
             if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
                 e.Handled = true;
         }
+        #endregion
+
+        #region File
+
+        private void btn_openFile_Click(object sender, EventArgs e)
+        {
+            if(ofd.ShowDialog() == DialogResult.OK)
+            {
+                GRBLFramework.PrepareFile(ofd.FileName);
+
+                btn_sendFile.Enabled = true;
+            }
+        }
+
+        private void btn_sendFile_Click(object sender, EventArgs e)
+        {
+            GRBLFramework.SendFile();
+
+            btn_stopFile.Enabled = true;
+            btn_sendFile.Enabled = false;
+            btn_openFile.Enabled = false;
+        }
+
+        private void btn_stopFile_Click(object sender, EventArgs e)
+        {
+            GRBLFramework.StopFile();
+            GRBLFramework.HOLD();
+
+            btn_stopFile.Enabled = false;
+            btn_sendFile.Enabled = true;
+            btn_openFile.Enabled = true;
+        }
+
+        #endregion
     }
 }

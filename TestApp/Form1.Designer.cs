@@ -102,9 +102,16 @@
             this.label8 = new System.Windows.Forms.Label();
             this.textBox_feedRate = new System.Windows.Forms.TextBox();
             this.groupBox_moveButtons = new System.Windows.Forms.GroupBox();
-            this.btn_x0y0 = new System.Windows.Forms.Button();
             this.btn_z0 = new System.Windows.Forms.Button();
+            this.btn_x0y0 = new System.Windows.Forms.Button();
+            this.btn_openFile = new System.Windows.Forms.Button();
+            this.btn_sendFile = new System.Windows.Forms.Button();
+            this.btn_stopFile = new System.Windows.Forms.Button();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.label_percentage = new System.Windows.Forms.Label();
+            this.btn_touchThePlate = new System.Windows.Forms.Button();
             this.joggingKnob1 = new GRBL.Controls.JoggingKnob();
+            this.label9 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox_moveButtons.SuspendLayout();
             this.SuspendLayout();
@@ -666,7 +673,7 @@
             // 
             this.l_ver.AutoSize = true;
             this.l_ver.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.l_ver.Location = new System.Drawing.Point(12, 660);
+            this.l_ver.Location = new System.Drawing.Point(3, 660);
             this.l_ver.Name = "l_ver";
             this.l_ver.Size = new System.Drawing.Size(49, 16);
             this.l_ver.TabIndex = 39;
@@ -676,7 +683,7 @@
             // 
             this.l_opt.AutoSize = true;
             this.l_opt.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.l_opt.Location = new System.Drawing.Point(12, 680);
+            this.l_opt.Location = new System.Drawing.Point(3, 680);
             this.l_opt.Name = "l_opt";
             this.l_opt.Size = new System.Drawing.Size(49, 16);
             this.l_opt.TabIndex = 40;
@@ -889,16 +896,6 @@
             this.groupBox_moveButtons.TabStop = false;
             this.groupBox_moveButtons.Text = "Move";
             // 
-            // btn_x0y0
-            // 
-            this.btn_x0y0.Location = new System.Drawing.Point(62, 85);
-            this.btn_x0y0.Name = "btn_x0y0";
-            this.btn_x0y0.Size = new System.Drawing.Size(50, 50);
-            this.btn_x0y0.TabIndex = 61;
-            this.btn_x0y0.Text = "G0 X0 Y0";
-            this.btn_x0y0.UseVisualStyleBackColor = true;
-            this.btn_x0y0.Click += new System.EventHandler(this.btn_x0y0_Click);
-            // 
             // btn_z0
             // 
             this.btn_z0.Location = new System.Drawing.Point(175, 86);
@@ -909,6 +906,77 @@
             this.btn_z0.UseVisualStyleBackColor = true;
             this.btn_z0.Click += new System.EventHandler(this.btn_z0_Click);
             // 
+            // btn_x0y0
+            // 
+            this.btn_x0y0.Location = new System.Drawing.Point(62, 85);
+            this.btn_x0y0.Name = "btn_x0y0";
+            this.btn_x0y0.Size = new System.Drawing.Size(50, 50);
+            this.btn_x0y0.TabIndex = 61;
+            this.btn_x0y0.Text = "G0 X0 Y0";
+            this.btn_x0y0.UseVisualStyleBackColor = true;
+            this.btn_x0y0.Click += new System.EventHandler(this.btn_x0y0_Click);
+            // 
+            // btn_openFile
+            // 
+            this.btn_openFile.Enabled = false;
+            this.btn_openFile.Location = new System.Drawing.Point(326, 373);
+            this.btn_openFile.Name = "btn_openFile";
+            this.btn_openFile.Size = new System.Drawing.Size(75, 30);
+            this.btn_openFile.TabIndex = 62;
+            this.btn_openFile.Text = "Open File";
+            this.btn_openFile.UseVisualStyleBackColor = true;
+            this.btn_openFile.Click += new System.EventHandler(this.btn_openFile_Click);
+            // 
+            // btn_sendFile
+            // 
+            this.btn_sendFile.Enabled = false;
+            this.btn_sendFile.Location = new System.Drawing.Point(411, 373);
+            this.btn_sendFile.Name = "btn_sendFile";
+            this.btn_sendFile.Size = new System.Drawing.Size(75, 30);
+            this.btn_sendFile.TabIndex = 63;
+            this.btn_sendFile.Text = "Send File";
+            this.btn_sendFile.UseVisualStyleBackColor = true;
+            this.btn_sendFile.Click += new System.EventHandler(this.btn_sendFile_Click);
+            // 
+            // btn_stopFile
+            // 
+            this.btn_stopFile.Enabled = false;
+            this.btn_stopFile.Location = new System.Drawing.Point(495, 373);
+            this.btn_stopFile.Name = "btn_stopFile";
+            this.btn_stopFile.Size = new System.Drawing.Size(75, 30);
+            this.btn_stopFile.TabIndex = 64;
+            this.btn_stopFile.Text = "Stop File";
+            this.btn_stopFile.UseVisualStyleBackColor = true;
+            this.btn_stopFile.Click += new System.EventHandler(this.btn_stopFile_Click);
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(326, 348);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(244, 23);
+            this.progressBar1.TabIndex = 65;
+            // 
+            // label_percentage
+            // 
+            this.label_percentage.AutoSize = true;
+            this.label_percentage.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_percentage.Location = new System.Drawing.Point(326, 329);
+            this.label_percentage.Name = "label_percentage";
+            this.label_percentage.Size = new System.Drawing.Size(21, 16);
+            this.label_percentage.TabIndex = 66;
+            this.label_percentage.Text = "%";
+            // 
+            // btn_touchThePlate
+            // 
+            this.btn_touchThePlate.Enabled = false;
+            this.btn_touchThePlate.Location = new System.Drawing.Point(326, 261);
+            this.btn_touchThePlate.Name = "btn_touchThePlate";
+            this.btn_touchThePlate.Size = new System.Drawing.Size(153, 30);
+            this.btn_touchThePlate.TabIndex = 67;
+            this.btn_touchThePlate.Text = "Touch The Plate";
+            this.btn_touchThePlate.UseVisualStyleBackColor = true;
+            this.btn_touchThePlate.Click += new System.EventHandler(this.btn_touchThePlate_Click);
+            // 
             // joggingKnob1
             // 
             this.joggingKnob1.Enabled = false;
@@ -918,11 +986,27 @@
             this.joggingKnob1.TabIndex = 35;
             this.joggingKnob1.Text = "joggingKnob1";
             // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label9.Location = new System.Drawing.Point(182, 630);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(119, 36);
+            this.label9.TabIndex = 69;
+            this.label9.Text = "<- Do this before\r\nsending file";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(748, 705);
+            this.Controls.Add(this.btn_touchThePlate);
+            this.Controls.Add(this.label_percentage);
+            this.Controls.Add(this.progressBar1);
+            this.Controls.Add(this.btn_stopFile);
+            this.Controls.Add(this.btn_sendFile);
+            this.Controls.Add(this.btn_openFile);
             this.Controls.Add(this.groupBox_moveButtons);
             this.Controls.Add(this.checkBox_lockY);
             this.Controls.Add(this.checkBox_lockX);
@@ -966,6 +1050,7 @@
             this.Controls.Add(this.btn_disconnect);
             this.Controls.Add(this.btn_connect);
             this.Controls.Add(this.label_machineStatus);
+            this.Controls.Add(this.label9);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -1059,6 +1144,13 @@
         private System.Windows.Forms.GroupBox groupBox_moveButtons;
         private System.Windows.Forms.Button btn_z0;
         private System.Windows.Forms.Button btn_x0y0;
+        private System.Windows.Forms.Button btn_openFile;
+        private System.Windows.Forms.Button btn_sendFile;
+        private System.Windows.Forms.Button btn_stopFile;
+        private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.Label label_percentage;
+        private System.Windows.Forms.Button btn_touchThePlate;
+        private System.Windows.Forms.Label label9;
     }
 }
 

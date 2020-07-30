@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Windows.Forms;
 
 using GRBL.Controls;
+using GRBL.Wiki;
 
 namespace GRBL
 {
@@ -93,6 +95,8 @@ namespace GRBL
 
             serialPort.Open();
             queryTimer.Start();
+
+            SetCoordinateSystem(eP.P1);
         }
 
         /// <summary>
@@ -189,6 +193,10 @@ namespace GRBL
             }
 
             //Add lines to settings list if scanning them
+
+            if(RX_DATA.StartsWith("$"))
+                LineToConsole(RX_DATA);
+
             if (SettingsScan)
             {
                 if (RX_DATA.StartsWith("$"))
@@ -225,7 +233,10 @@ namespace GRBL
             if (RX_DATA.Contains("ALARM"))
             {
                 MachineState = eMachineState.Alarm;
-
+                LineToConsole("-------------------");
+                LineToConsole(RX_DATA);
+                LineToConsole(WikiAlarm.GetAlarmDescription(int.Parse(RX_DATA.Split(':')[1])));
+                LineToConsole("-------------------");
                 Receiving = false;
                 return;
             }
@@ -234,26 +245,77 @@ namespace GRBL
             if (RX_DATA.StartsWith("error"))
             {
                 //Stop machine if error during file transfer
-
+                LineToConsole("-------------------");
+                LineToConsole(RX_DATA);
+                LineToConsole(WikiError.GetErrorDescription(int.Parse(RX_DATA.Split(':')[1])));
+                LineToConsole("-------------------");
+                HOLD();
 
                 Receiving = false;
                 return;
             }
 
-            //MSG, PRB, VER, OPT
+            //MSG, PRB
             if (RX_DATA.Length > 0 && RX_DATA[0] == '[')
             {
                 if (RX_DATA.Contains("MSG"))
                 {
+                    if (RX_DATA.Contains("Pgm End") && FileHasBeenSent != null)
+                    {
+                        if(FileHasBeenSent != null)
+                            FileHasBeenSent.Invoke();
+
+                        LineToConsole(RX_DATA);
+                    }
+                    else
+                    {
+                        LineToConsole("-------------------");
+                        LineToConsole("MESSAGE");
+                        LineToConsole(RX_DATA);
+                        LineToConsole("-------------------");
+                    }
 
                 }
-                else if (RX_DATA.Contains("PRB"))
+                else if (RX_DATA.Contains("PRB") && ProbeInProgress)
                 {
-
+                    SetZHeight();
+                    ProbeInProgress = false;
                 }
 
                 Receiving = false;
                 return;
+            }
+
+            //File
+            if(!SendingFile)
+            {
+                Receiving = false;
+                return;
+            }
+
+            buffer += FileLines[linesConfirmed].Length + 1;
+
+            if (RX_DATA.Contains("ok") && SendingFile)
+            {
+                linesConfirmed++;
+
+                if (linesConfirmed >= linesCount)
+                {
+                    SendingFile = false;
+
+                    UpdatePercentage();
+
+                    if (SendingSettings)
+                    {
+                        SendingSettings = false;
+                        LineToConsole("Settings has been sent.");
+                    }
+                }
+                else
+                {
+                    if(linesSent < linesCount)
+                        SendNextLines();
+                }
             }
 
             Receiving = false;
@@ -371,6 +433,29 @@ namespace GRBL
             return ScannedOPT.Split(':', ',')[1].ToCharArray();
         }
 
+        private bool SendingSettings = false;
+
+        public void SendSettingsToGRBL(List<string> settings)
+        {
+            if (settings == null || settings.Count <= 0)
+                return;
+
+            if (FileLines == null)
+                FileLines = new List<string>();
+
+            FileLines.Clear();
+            FileLines = settings;
+
+            SendingSettings = true;
+            bufferSize = ParseRXBufferSizeFromScanned() - 1;
+
+            linesCount = settings.Count;
+
+            LineToConsole("sending settings...");
+
+            SendFile();
+        }
+
         #endregion
 
         #region WCS
@@ -454,9 +539,61 @@ namespace GRBL
             SendLine(string.Format("G10 L20 {0} X0 Y0 Z0", CurrentWCS.ToString()), true);
         }
 
+        /// <summary>
+        /// Returns WCS G version of P
+        /// </summary>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        public string GetWorkCoordinateSpace(eP p)
+        {
+            switch(p)
+            {
+                case eP.P1:
+                    return "G54";
+                case eP.P2:
+                    return "G55";
+                case eP.P3:
+                    return "G56";
+                case eP.P4:
+                    return "G57";
+                case eP.P5:
+                    return "G58";
+                case eP.P6:
+                    return "G59";
+                default:
+                    return string.Empty;
+            }
+        }
+
         #endregion
 
         #region Commands
+
+        /// <summary>
+        /// Start spindle with RPM (M3 S0000)
+        /// </summary>
+        /// <param name="RPM">RPM</param>
+        public void PowerSpindle(int RPM)
+        {
+            SendLine(string.Format("M3 S{0}", RPM), true);
+        }
+
+        /// <summary>
+        /// Start spindle (M3)
+        /// </summary>
+        public void PowerSpidle()
+        {
+            SendLine("M3", true);
+        }
+
+        /// <summary>
+        /// Stop spindle (M5)
+        /// </summary>
+        public void PowerOffSpindle()
+        {
+            SendLine("M5", true);
+        }
+
 
         /// <summary>
         /// Unlock GRBL ($X)
@@ -502,6 +639,7 @@ namespace GRBL
         {
             SendLine("$H", true);
         }
+
 
         /// <summary>
         /// Send $I command to get VER and OPT
@@ -651,6 +789,9 @@ namespace GRBL
         /// <param name="amount">Override amount</param>
         public void RapidOverride(int amount)
         {
+            if (!IsSerialConnected())
+                return;
+
             switch(amount)
             {
                 case 0:
@@ -668,6 +809,7 @@ namespace GRBL
             }
         }
 
+
         /// <summary>
         /// Rename arduino board
         /// </summary>
@@ -682,10 +824,7 @@ namespace GRBL
         /// </summary>
         public void RestoreGRBL_Settings()
         {
-            if (IsSerialConnected())
-            {
-                SendLine("$RST=$", true);
-            }
+            SendLine("$RST=$", true);
         }
 
         /// <summary>
@@ -693,10 +832,7 @@ namespace GRBL
         /// </summary>
         public void RestoreGRBL_WCO()
         {
-            if (IsSerialConnected())
-            {
-                SendLine("$RST=#", true);
-            }
+            SendLine("$RST=#", true);
         }
 
         /// <summary>
@@ -704,10 +840,7 @@ namespace GRBL
         /// </summary>
         public void RestoreGRBL_EEPROM()
         {
-            if (IsSerialConnected())
-            {
-                SendLine("$RST=*", true);
-            }
+            SendLine("$RST=*", true);
         }
 
         #endregion
@@ -945,6 +1078,224 @@ namespace GRBL
 
                 nextJog = false;
             }
+        }
+
+        #endregion
+
+        #region File
+
+        public List<string> FileLines;
+        private int bufferSize, buffer, linesSent, linesConfirmed, linesCount;
+        public bool SendingFile = false;
+
+        public float FileSentPercentage = 0.0f;
+
+        /// <summary>
+        /// When file has been sent and pgm end msg received
+        /// </summary>
+        public Action FileHasBeenSent;
+
+        /// <summary>
+        /// Stop sending file
+        /// </summary>
+        public void StopFile()
+        {
+            SendingFile = false;
+            DoToolChange = false;
+        }
+
+        /// <summary>
+        /// Start sending file
+        /// </summary>
+        public void SendFile()
+        {
+            linesSent = 0;
+            linesConfirmed = 0;
+            buffer = bufferSize;
+
+            SendingFile = true;
+            SendNextLines();
+        }
+
+        /// <summary>
+        /// Prepare opened file to list
+        /// </summary>
+        /// <param name="file"></param>
+        public void PrepareFile(string file)
+        {
+            if (!File.Exists(file))
+                return;
+
+            bufferSize = ParseRXBufferSizeFromScanned() - 1;
+
+            if (FileLines == null)
+                FileLines = new List<string>();
+
+            FileLines.Clear();
+            linesCount = 0;
+
+            using (StreamReader sr = new StreamReader(file))
+            {
+                string line = sr.ReadLine();
+                while(line != null)
+                {
+                    if ((!string.IsNullOrEmpty(line)) && (line[0] != '(') && line[0] != '%')
+                    {
+                        FileLines.Add(line);
+                        linesCount++;
+                    }
+
+                    line = sr.ReadLine();
+                }
+
+                sr.Close();
+            }
+
+            LineToConsole(string.Format("Lines prepared {0}", FileLines.Count));
+        }
+
+        /// <summary>
+        /// Send next lines
+        /// </summary>
+        private void SendNextLines()
+        {
+            if (DoToolChange)
+                return;
+
+            while((linesSent < linesCount) && (buffer >= FileLines[linesSent].Length + 1))
+            {
+                //Check if line is tool change command
+                if(LineIsToolChange(FileLines[linesSent]))
+                {
+                    CurrentToolID = GetToolIDFromLine(FileLines[linesSent]);
+                    DoToolChange = true;
+                    linesSent++;
+                    LineToConsole(string.Format("Change Tool to: {0}", CurrentToolID));
+                    break;
+                }    
+
+                SendLine(FileLines[linesSent], true);
+                buffer -= FileLines[linesSent].Length + 1;
+                linesSent++;
+
+                UpdatePercentage();
+            }
+        }
+
+        /// <summary>
+        /// Update progress percentage
+        /// </summary>
+        private void UpdatePercentage()
+        {
+            FileSentPercentage = ((float)linesSent / (float)FileLines.Count) * 100;
+        }
+
+        #endregion
+
+        #region Tool Change
+
+        public int CurrentToolID = 0;
+        public bool DoToolChange = false;
+
+        /// <summary>
+        /// If file has been opened, this will return all tool ID numbers.
+        /// </summary>
+        /// <returns>array of tool ID's</returns>
+        public int[] GetToolIDsFromFile()
+        {
+            if(FileLines != null && FileLines.Count > 0)
+            {
+                List<int> IDs = new List<int>();
+
+                foreach(string line in FileLines)
+                {
+                    if(line[0] == 'T')
+                        IDs.Add(int.Parse(line.Split('T', ' ')[1]));
+                }
+
+                return IDs.ToArray();
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Get tool ID from line
+        /// </summary>
+        /// <param name="line">T1 M6</param>
+        /// <returns>Tool ID</returns>
+        public int GetToolIDFromLine(string line)
+        {
+            return int.Parse(line.Split('T', ' ')[1]);
+        }
+
+        /// <summary>
+        /// Inform that tool has been changed to continue
+        /// </summary>
+        public void ToolChanged()
+        {
+            DoToolChange = false;
+            SendNextLines();
+        }
+
+        /// <summary>
+        /// Check if line is tool change command
+        /// </summary>
+        /// <param name="line">line to be checked</param>
+        /// <returns></returns>
+        private bool LineIsToolChange(string line)
+        {
+            if (line.Contains("T"))
+                return true;
+
+            return false;
+        }
+
+        #endregion
+
+        #region Probe
+
+        private float PlateHeight = 0.0f;
+        public bool ProbeInProgress { get; private set; } = false;
+
+        /// <summary>
+        /// Probe command. Find workpiece top surface.
+        /// </summary>
+        /// <param name="distance">How far down Z axis will move ?</param>
+        /// <param name="feedRate">How fast Z axis will move ?</param>
+        /// <param name="plateHeight">Plate height is needed to set correct Z height.</param>
+        public void ToutchThePlate(float distance, int feedRate, float plateHeight)
+        {
+            PlateHeight = plateHeight;
+            ProbeInProgress = true;
+
+            SendLine(string.Format("G38.2Z{0}F{1}", distance, feedRate), true);            
+        }
+
+        /// <summary>
+        /// Returns probe value from: [PRB:0.000,0.000,0.000:0]
+        /// </summary>
+        /// <param name="rxData"></param>
+        /// <param name="axis"></param>
+        /// <returns></returns>
+        private float GetProbeValue(string rxData, eAxis axis)
+        {
+            switch(axis)
+            {
+                case eAxis.X:
+                    return float.Parse(rxData.Split(':', ',')[1].Replace('.', ','));
+                case eAxis.Y:
+                    return float.Parse(rxData.Split(',', ',')[1].Replace('.', ','));
+                case eAxis.Z:
+                    return float.Parse(rxData.Split(',', ':')[3].Replace('.', ','));
+                default:
+                    return 0.0f;
+            }
+        }
+
+        private void SetZHeight()
+        {
+            SendLine(string.Format("G10{0}L20Z{1}", GetWorkCoordinateSpace(CurrentWCS), PlateHeight), true);
         }
 
         #endregion

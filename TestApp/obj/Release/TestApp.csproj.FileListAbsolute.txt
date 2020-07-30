@@ -11,3 +11,4 @@ D:\Wooden Vision\WoodCharp\Code\Visual Studio\GRBL Framework\GRBL Framework\Test
 D:\Wooden Vision\WoodCharp\Code\Visual Studio\GRBL Framework\GRBL Framework\TestApp\obj\Release\TestApp.csproj.CopyComplete
 D:\Wooden Vision\WoodCharp\Code\Visual Studio\GRBL Framework\GRBL Framework\TestApp\obj\Release\TestApp.exe
 D:\Wooden Vision\WoodCharp\Code\Visual Studio\GRBL Framework\GRBL Framework\TestApp\obj\Release\TestApp.pdb
+D:\Wooden Vision\WoodCharp\Code\Visual Studio\GRBL Framework\GRBL Framework\TestApp\obj\Release\TestApp.Form_ToolChange.resources
