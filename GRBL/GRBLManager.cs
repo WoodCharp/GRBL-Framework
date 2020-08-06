@@ -24,15 +24,16 @@ namespace GRBL
             serialPort = new SerialPort();
             serialPort.DataReceived += new SerialDataReceivedEventHandler(serialPort_DataReceived);
 
-            queryTimer = new Timer();
+            queryTimer = new System.Windows.Forms.Timer();
             queryTimer.Interval = TimerInterval;
             queryTimer.Tick += new EventHandler(queryTimer_Tick);
 
-            JoggingTimer = new Timer();
+            JoggingTimer = new System.Windows.Forms.Timer();
             JoggingTimer.Interval = 1000;
             JoggingTimer.Tick += new EventHandler(JoggingTimer_Tick);
 
             ScannedGRBLSettings = new List<GRBLSetting>();
+            MessagesList = new List<MessageInfo>();
         }
 
         #region Console
@@ -60,7 +61,7 @@ namespace GRBL
         #region Serial
 
         private SerialPort serialPort;
-        private Timer queryTimer;
+        private System.Windows.Forms.Timer queryTimer;
 
         private string RX_DATA;
         private bool Receiving = false;
@@ -68,6 +69,54 @@ namespace GRBL
         private int LockCounter = 0, LockTrigger = 3;
         private const int TimerInterval = 200;
         public bool ShowQuery = true;
+
+        #region Check mode
+
+        public List<CheckItem> CheckItemsList;
+        public Action CheckEndAction;
+        public bool CheckInProgress = false;
+
+        public void StartCheck()
+        {
+            if (CheckItemsList == null)
+                CheckItemsList = new List<CheckItem>();
+
+            CheckItemsList.Clear();
+
+            CheckInProgress = true;
+            SendFile();
+        }
+
+        /// <summary>
+        /// Enable check mode by sending $C and disable sending it again. $C
+        /// </summary>
+        public void CheckMode()
+        {
+            SendLine("$C", false);
+        }
+
+        #endregion
+
+        #region Messages List
+
+        public Action MessageReceived;
+        public List<MessageInfo> MessagesList;
+        public bool ShowMessagesInConsole_ALARM = true;
+        public bool ShowMessagesInConsole_ERROR = true;
+        public bool ShowMessagesInConsole_MSG = true;
+
+        public void AddMessage(string type, string id, string message)
+        {
+            MessagesList.Add(new MessageInfo() { ID = id, Message = message, Type = type });
+        }
+
+        public void RemoveMessage(int index)
+        {
+            MessagesList.RemoveAt(index);
+        }
+
+        #endregion
+
 
         /// <summary>
         /// Check if serial is connected
@@ -87,16 +136,27 @@ namespace GRBL
             if (IsSerialConnected())
                 CloseSerialPort();
 
-            LockCounter = 0;
-            RX_DATA = string.Empty;
-            Receiving = false;
+            try
+            {
+                LockCounter = 0;
+                RX_DATA = string.Empty;
+                Receiving = false;
 
-            portData.PortDataToSerialPort(serialPort);
+                portData.PortDataToSerialPort(serialPort);
 
-            serialPort.Open();
-            queryTimer.Start();
+                serialPort.Open();
+                queryTimer.Start();
 
-            SetCoordinateSystem(eP.P1);
+                SetCoordinateSystem(eP.P1);
+            }
+            catch(Exception ex)
+            {
+                queryTimer.Stop();
+                MachineState = eMachineState.Unknown;
+                Receiving = false;
+                RX_DATA = string.Empty;
+                MessageBox.Show(ex.Message, "Serial Port", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         /// <summary>
@@ -122,7 +182,7 @@ namespace GRBL
             {
                 serialPort.Write(string.Format("{0}\r", FormattingLine(line)));
 
-                if(sendToConsole)
+                if(sendToConsole && !CheckInProgress)
                     LineToConsole(FormattingLine(line));
             }
         }
@@ -165,6 +225,42 @@ namespace GRBL
 
         private void DataReceived(object sender, EventArgs e)
         {
+            if (CheckInProgress && MachineState == eMachineState.Check && SendingFile)
+            {
+                if (RX_DATA[0] != '<')
+                {
+                    CheckItemsList.Add(new CheckItem() { Line = FileLines[linesConfirmed], OK = RX_DATA, lineIndex = linesConfirmed });
+                }
+            }
+
+            if (SendingFile)
+            {
+                if (RX_DATA.Contains("ok"))
+                {
+                    buffer += FileLines[linesConfirmed].Length + 1;
+
+                    linesConfirmed++;
+
+                    if (linesConfirmed >= linesCount)
+                    {
+                        SendingFile = false;
+
+                        UpdatePercentage();
+
+                        if (SendingSettings)
+                        {
+                            SendingSettings = false;
+                            LineToConsole("Settings has been sent.");
+                        }
+                    }
+                    else
+                    {
+                        if (linesSent < linesCount)
+                            SendNextLine();
+                    }
+                }
+            }
+
             //Query data
             if (RX_DATA.Length > 0 && RX_DATA[0] == '<')
             {
@@ -233,23 +329,52 @@ namespace GRBL
             if (RX_DATA.Contains("ALARM"))
             {
                 MachineState = eMachineState.Alarm;
-                LineToConsole("-------------------");
-                LineToConsole(RX_DATA);
-                LineToConsole(WikiAlarm.GetAlarmDescription(int.Parse(RX_DATA.Split(':')[1])));
-                LineToConsole("-------------------");
+
+                if(ShowMessagesInConsole_ALARM)
+                {
+                    LineToConsole("-------------------");
+                    LineToConsole(RX_DATA);
+                    LineToConsole(WikiAlarm.GetAlarmDescription(int.Parse(RX_DATA.Split(':')[1])));
+                    LineToConsole("-------------------");
+                }
+
+                if (MessageReceived != null)
+                {
+                    AddMessage("ALARM",
+                        int.Parse(RX_DATA.Split(':')[1]).ToString(),
+                        WikiAlarm.GetAlarmDescription(int.Parse(RX_DATA.Split(':')[1])));
+
+                    MessageReceived.Invoke();
+                }
+
                 Receiving = false;
                 return;
             }
 
             //Errors
-            if (RX_DATA.StartsWith("error"))
+            if (RX_DATA.StartsWith("error") && !CheckInProgress)
             {
+                if(ShowMessagesInConsole_ERROR)
+                {
+                    LineToConsole("-------------------");
+                    LineToConsole(RX_DATA);
+                    LineToConsole(WikiError.GetErrorDescription(int.Parse(RX_DATA.Split(':')[1])));
+                    LineToConsole("-------------------");
+                }
+
+
+
                 //Stop machine if error during file transfer
-                LineToConsole("-------------------");
-                LineToConsole(RX_DATA);
-                LineToConsole(WikiError.GetErrorDescription(int.Parse(RX_DATA.Split(':')[1])));
-                LineToConsole("-------------------");
                 HOLD();
+
+                if (MessageReceived != null)
+                {
+                    AddMessage("ERROR",
+                        int.Parse(RX_DATA.Split(':')[1]).ToString(),
+                        WikiError.GetErrorDescription(int.Parse(RX_DATA.Split(':')[1])));
+
+                    MessageReceived.Invoke();
+                }
 
                 Receiving = false;
                 return;
@@ -260,62 +385,47 @@ namespace GRBL
             {
                 if (RX_DATA.Contains("MSG"))
                 {
-                    if (RX_DATA.Contains("Pgm End") && FileHasBeenSent != null)
+                    if (RX_DATA.Contains("Pgm End"))
                     {
-                        if(FileHasBeenSent != null)
+                        if(FileHasBeenSent != null && !CheckInProgress)
                             FileHasBeenSent.Invoke();
 
-                        LineToConsole(RX_DATA);
-                    }
-                    else
-                    {
-                        LineToConsole("-------------------");
-                        LineToConsole("MESSAGE");
-                        LineToConsole(RX_DATA);
-                        LineToConsole("-------------------");
-                    }
+                        if (CheckInProgress)
+                        {
+                            if (CheckEndAction != null)
+                                CheckEndAction.Invoke();
 
+                            CheckInProgress = false;
+                        }
+
+                        LineToConsole(RX_DATA);
+                    }
                 }
                 else if (RX_DATA.Contains("PRB") && ProbeInProgress)
                 {
-                    SetZHeight();
+                    SetZHeight(RX_DATA);
                     ProbeInProgress = false;
                 }
 
+                if(ShowMessagesInConsole_MSG)
+                {
+                    LineToConsole("-------------------");
+                    LineToConsole("MESSAGE");
+                    LineToConsole(RX_DATA);
+                    LineToConsole("-------------------");
+                }
+
+                if (MessageReceived != null)
+                {
+                    AddMessage("MESSAGE",
+                        RX_DATA.Split(':', ']')[1],
+                        WikiMessages.GetMessageDescription(RX_DATA.Split(':', ']')[1]));
+
+                    MessageReceived.Invoke();
+                }
+
                 Receiving = false;
                 return;
-            }
-
-            //File
-            if(!SendingFile)
-            {
-                Receiving = false;
-                return;
-            }
-
-            buffer += FileLines[linesConfirmed].Length + 1;
-
-            if (RX_DATA.Contains("ok") && SendingFile)
-            {
-                linesConfirmed++;
-
-                if (linesConfirmed >= linesCount)
-                {
-                    SendingFile = false;
-
-                    UpdatePercentage();
-
-                    if (SendingSettings)
-                    {
-                        SendingSettings = false;
-                        LineToConsole("Settings has been sent.");
-                    }
-                }
-                else
-                {
-                    if(linesSent < linesCount)
-                        SendNextLines();
-                }
             }
 
             Receiving = false;
@@ -594,6 +704,11 @@ namespace GRBL
             SendLine("M5", true);
         }
 
+        public void SetSpindleRPM(int RPM)
+        {
+            SendLine(string.Format("S{0}", RPM), true);
+        }
+
 
         /// <summary>
         /// Unlock GRBL ($X)
@@ -851,10 +966,13 @@ namespace GRBL
         public XYZ WPos;
         public XYZ WCO;
         public float CurrentFeedRate = 0.0f;
+        public float currentSpindleSpeed = 0.0f;
 
         public float OverrideFeedRate = 100;
         public float OverrideRapid = 100;
         public float OverrideSpindle = 100;
+
+        private string FS = "", OV = "", F, S;
 
         /// <summary>
         /// Updates position
@@ -865,25 +983,34 @@ namespace GRBL
             try
             {
                 string rawPos = rxData.Split('|', '|')[1];
-                string fs = "";
                 if(rxData.Contains("Ov"))
                 {
-                    fs = rxData.Split('|', '|')[2];
+                    FS = rxData.Split('|', '|')[2];
 
                     string ov = rxData.Split('|', '>')[3];
                     OverrideFeedRate = float.Parse(ov.Split(':', ',')[1]);
                     OverrideRapid = float.Parse(ov.Split(',', ',')[1]);
                     OverrideSpindle = float.Parse(ov.Split(',').Last());
                 }
-                else if(rxData.Contains("FS"))
+                else if(rxData.Contains("FS") || rxData.Contains("F"))
                 {
-                    fs = rxData.Split('|', '>')[2];
+                    FS = rxData.Split('|', '>')[2];
                 }
 
-                if(fs != "")
+                if(FS != "")
                 {
-                    fs = fs.Replace("FS:", string.Empty);
-                    CurrentFeedRate = float.Parse(Converters.DotToFloat(fs));
+                    if(FS.StartsWith("FS:"))
+                        F = FS.Split(':', ',')[1];
+                    else //GRBL reports only F
+                        F = FS.Split(':', '>')[1];
+
+                    CurrentFeedRate = float.Parse(Converters.DotToFloat(F));
+
+                    if (FS.Contains("FS"))
+                    {
+                        S = FS.Split(',', '>')[1];
+                        currentSpindleSpeed = float.Parse(Converters.DotToFloat(S));
+                    }
                 }
 
                 if (rxData.Contains("WCO"))
@@ -1015,10 +1142,10 @@ namespace GRBL
 
         public JoggingKnob joggingKnob;
         public bool EnableJoggingKnob = true;
-        private Timer JoggingTimer;
-        private float JoggingAmmount = 1.5f;
-        private float JoggingFeedRate = 500;
-        private int JoggingInterval = 500;
+        private System.Windows.Forms.Timer JoggingTimer;
+        public float JoggingAmmount = 1.5f;
+        public int JoggingFeedRate = 500;
+        public int JoggingInterval = 500;
         private bool Jogging = false, nextJog = false;
 
         /// <summary>
@@ -1114,7 +1241,7 @@ namespace GRBL
             buffer = bufferSize;
 
             SendingFile = true;
-            SendNextLines();
+            SendNextLine();
         }
 
         /// <summary>
@@ -1155,24 +1282,31 @@ namespace GRBL
         }
 
         /// <summary>
-        /// Send next lines
+        /// Update progress percentage
         /// </summary>
-        private void SendNextLines()
+        private void UpdatePercentage()
+        {
+            FileSentPercentage = ((float)linesSent / (float)FileLines.Count) * 100;
+        }
+
+        /// <summary>
+        /// Send next line to GRBL
+        /// </summary>
+        private void SendNextLine()
         {
             if (DoToolChange)
                 return;
 
-            while((linesSent < linesCount) && (buffer >= FileLines[linesSent].Length + 1))
+            if(linesSent < linesCount && buffer >= FileLines[linesSent].Length + 1)
             {
-                //Check if line is tool change command
-                if(LineIsToolChange(FileLines[linesSent]))
+                if (LineIsToolChange(FileLines[linesSent]) && !CheckInProgress)
                 {
                     CurrentToolID = GetToolIDFromLine(FileLines[linesSent]);
                     DoToolChange = true;
                     linesSent++;
                     LineToConsole(string.Format("Change Tool to: {0}", CurrentToolID));
-                    break;
-                }    
+                    return;
+                }
 
                 SendLine(FileLines[linesSent], true);
                 buffer -= FileLines[linesSent].Length + 1;
@@ -1180,14 +1314,6 @@ namespace GRBL
 
                 UpdatePercentage();
             }
-        }
-
-        /// <summary>
-        /// Update progress percentage
-        /// </summary>
-        private void UpdatePercentage()
-        {
-            FileSentPercentage = ((float)linesSent / (float)FileLines.Count) * 100;
         }
 
         #endregion
@@ -1235,7 +1361,7 @@ namespace GRBL
         public void ToolChanged()
         {
             DoToolChange = false;
-            SendNextLines();
+            SendNextLine();
         }
 
         /// <summary>
@@ -1255,7 +1381,7 @@ namespace GRBL
 
         #region Probe
 
-        private float PlateHeight = 0.0f;
+        private float PlateHeight = 0.0f, ProbeMoveUpAfterDistance = 10.0f;
         public bool ProbeInProgress { get; private set; } = false;
 
         /// <summary>
@@ -1264,9 +1390,10 @@ namespace GRBL
         /// <param name="distance">How far down Z axis will move ?</param>
         /// <param name="feedRate">How fast Z axis will move ?</param>
         /// <param name="plateHeight">Plate height is needed to set correct Z height.</param>
-        public void ToutchThePlate(float distance, int feedRate, float plateHeight)
+        public void ToutchThePlate(float distance, int feedRate, float plateHeight, float moveUpDistance)
         {
             PlateHeight = plateHeight;
+            ProbeMoveUpAfterDistance = moveUpDistance;
             ProbeInProgress = true;
 
             SendLine(string.Format("G38.2Z{0}F{1}", distance, feedRate), true);            
@@ -1293,9 +1420,27 @@ namespace GRBL
             }
         }
 
-        private void SetZHeight()
+        /// <summary>
+        /// Check probe result
+        /// </summary>
+        /// <param name="rxData"></param>
+        /// <returns></returns>
+        private bool WasProbeSuccessful(string rxData)
         {
-            SendLine(string.Format("G10{0}L20Z{1}", GetWorkCoordinateSpace(CurrentWCS), PlateHeight), true);
+            return bool.Parse(rxData.Split(':', ']')[2]);
+        }
+
+        private void SetZHeight(string rxData)
+        {
+            if(WasProbeSuccessful(rxData))
+            {
+                SendLine(string.Format("G10{0}L20Z{1}", GetWorkCoordinateSpace(CurrentWCS), PlateHeight), true);
+
+                if (ProbeMoveUpAfterDistance < 0)
+                    ProbeMoveUpAfterDistance = -ProbeMoveUpAfterDistance;
+
+                MoveSingleAxis(eAxis.Z, false, ProbeMoveUpAfterDistance, 200);
+            }
         }
 
         #endregion

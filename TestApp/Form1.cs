@@ -69,6 +69,7 @@ namespace TestApp
             l_wcoZ.Text = GRBLFramework.WCO.Z.ToString();
 
             l_currentFeedRate.Text = GRBLFramework.CurrentFeedRate.ToString();
+            labelSpindleRPM.Text = GRBLFramework.currentSpindleSpeed.ToString();
 
             l_ovFeedRate.Text = GRBLFramework.OverrideFeedRate.ToString();
             l_ovRapid.Text = GRBLFramework.OverrideRapid.ToString();
@@ -267,7 +268,7 @@ namespace TestApp
 
         private void btn_touchThePlate_Click(object sender, EventArgs e)
         {
-            GRBLFramework.ToutchThePlate(-10.0f, 100, 10.0f);
+            GRBLFramework.ToutchThePlate(-10.0f, 100, 10.0f, 10.0f);
         }
 
         #endregion

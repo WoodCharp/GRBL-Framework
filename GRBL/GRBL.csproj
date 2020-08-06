@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CheckItem.cs" />
     <Compile Include="Controls\JoggingKnob.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -54,6 +55,7 @@
     <Compile Include="PortData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Converters.cs" />
+    <Compile Include="Wiki\MessageInfo.cs" />
     <Compile Include="Wiki\WikiAlarm.cs" />
     <Compile Include="Wiki\WikiError.cs" />
     <Compile Include="Wiki\WikiMessages.cs" />

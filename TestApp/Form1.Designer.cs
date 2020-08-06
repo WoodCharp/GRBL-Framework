@@ -112,6 +112,8 @@
             this.btn_touchThePlate = new System.Windows.Forms.Button();
             this.joggingKnob1 = new GRBL.Controls.JoggingKnob();
             this.label9 = new System.Windows.Forms.Label();
+            this.labelSpindleRPM = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox_moveButtons.SuspendLayout();
             this.SuspendLayout();
@@ -996,11 +998,33 @@
             this.label9.TabIndex = 69;
             this.label9.Text = "<- Do this before\r\nsending file";
             // 
+            // labelSpindleRPM
+            // 
+            this.labelSpindleRPM.AutoSize = true;
+            this.labelSpindleRPM.Font = new System.Drawing.Font("Microsoft Sans Serif", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelSpindleRPM.Location = new System.Drawing.Point(289, 220);
+            this.labelSpindleRPM.Name = "labelSpindleRPM";
+            this.labelSpindleRPM.Size = new System.Drawing.Size(109, 33);
+            this.labelSpindleRPM.TabIndex = 71;
+            this.labelSpindleRPM.Text = "00.000";
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label16.Location = new System.Drawing.Point(255, 220);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(35, 33);
+            this.label16.TabIndex = 70;
+            this.label16.Text = "S";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(748, 705);
+            this.Controls.Add(this.labelSpindleRPM);
+            this.Controls.Add(this.label16);
             this.Controls.Add(this.btn_touchThePlate);
             this.Controls.Add(this.label_percentage);
             this.Controls.Add(this.progressBar1);
@@ -1151,6 +1175,8 @@
         private System.Windows.Forms.Label label_percentage;
         private System.Windows.Forms.Button btn_touchThePlate;
         private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label labelSpindleRPM;
+        private System.Windows.Forms.Label label16;
     }
 }
 
