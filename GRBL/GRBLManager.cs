@@ -365,7 +365,8 @@ namespace GRBL
 
 
                 //Stop machine if error during file transfer
-                HOLD();
+                if(SendingFile)
+                    HOLD();
 
                 if (MessageReceived != null)
                 {
@@ -1432,15 +1433,12 @@ namespace GRBL
 
         private void SetZHeight(string rxData)
         {
-            if(WasProbeSuccessful(rxData))
-            {
-                SendLine(string.Format("G10{0}L20Z{1}", GetWorkCoordinateSpace(CurrentWCS), PlateHeight), true);
+            SendLine(string.Format("G10{0}L20Z{1}", GetWorkCoordinateSpace(CurrentWCS), PlateHeight), true);
 
-                if (ProbeMoveUpAfterDistance < 0)
-                    ProbeMoveUpAfterDistance = -ProbeMoveUpAfterDistance;
+            if (ProbeMoveUpAfterDistance < 0)
+                ProbeMoveUpAfterDistance = -ProbeMoveUpAfterDistance;
 
-                MoveSingleAxis(eAxis.Z, false, ProbeMoveUpAfterDistance, 200);
-            }
+            MoveSingleAxis(eAxis.Z, false, ProbeMoveUpAfterDistance, 200);
         }
 
         #endregion
