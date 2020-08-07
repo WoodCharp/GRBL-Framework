@@ -402,13 +402,14 @@ namespace GRBL
                         LineToConsole(RX_DATA);
                     }
                 }
-                else if (RX_DATA.Contains("PRB") && ProbeInProgress)
+
+                if (RX_DATA.Contains("PRB") && ProbeInProgress)
                 {
                     SetZHeight(RX_DATA);
                     ProbeInProgress = false;
                 }
 
-                if(ShowMessagesInConsole_MSG)
+                if (ShowMessagesInConsole_MSG)
                 {
                     LineToConsole("-------------------");
                     LineToConsole("MESSAGE");
@@ -1438,7 +1439,7 @@ namespace GRBL
             if (ProbeMoveUpAfterDistance < 0)
                 ProbeMoveUpAfterDistance = -ProbeMoveUpAfterDistance;
 
-            MoveSingleAxis(eAxis.Z, false, ProbeMoveUpAfterDistance, 200);
+            SendLine(string.Format("G1Z{0}F100", ProbeMoveUpAfterDistance), true);
         }
 
         #endregion
