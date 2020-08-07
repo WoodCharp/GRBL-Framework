@@ -225,6 +225,11 @@ namespace GRBL
 
         private void DataReceived(object sender, EventArgs e)
         {
+            if (RX_DATA.StartsWith("[PRB") && ProbeInProgress)
+            {
+                ProbeNextStep();
+            }
+
             if (CheckInProgress && MachineState == eMachineState.Check && SendingFile)
             {
                 if (RX_DATA[0] != '<')
@@ -381,8 +386,8 @@ namespace GRBL
                 return;
             }
 
-            //MSG, PRB
-            if (RX_DATA.Length > 0 && RX_DATA[0] == '[')
+            //MSG
+            if (RX_DATA.Length > 0 && RX_DATA[0] == '[' && !ProbeInProgress)
             {
                 if (RX_DATA.Contains("MSG"))
                 {
@@ -401,12 +406,6 @@ namespace GRBL
 
                         LineToConsole(RX_DATA);
                     }
-                }
-
-                if (RX_DATA.Contains("PRB") && ProbeInProgress)
-                {
-                    SetZHeight(RX_DATA);
-                    ProbeInProgress = false;
                 }
 
                 if (ShowMessagesInConsole_MSG)
@@ -1384,6 +1383,7 @@ namespace GRBL
         #region Probe
 
         private float PlateHeight = 0.0f, ProbeMoveUpAfterDistance = 10.0f;
+        private int TouchCounter = 0;
         public bool ProbeInProgress { get; private set; } = false;
 
         /// <summary>
@@ -1396,9 +1396,36 @@ namespace GRBL
         {
             PlateHeight = plateHeight;
             ProbeMoveUpAfterDistance = moveUpDistance;
+            TouchCounter = 0;
+
             ProbeInProgress = true;
 
-            SendLine(string.Format("G38.2Z{0}F{1}", distance, feedRate), true);            
+            SendLine(string.Format("G38.2Z{0}F{1}", distance, feedRate), true);
+        }
+
+        private void ProbeNextStep()
+        {
+            TouchCounter++;
+
+            if (TouchCounter > 2)
+            {
+                SetZHeight();
+                return;
+            }
+
+            switch(TouchCounter)
+            {
+                case 1:
+                    SendLine("G04P1", true);
+                    SendLine("G1G91Z3F60", true);
+                    SendLine("G38.2Z-5F60", true);
+                    break;
+                case 2:
+                    SendLine("G04P1", true);
+                    SendLine("G1G91Z1F50", true);
+                    SendLine("G38.2Z-5F15", true);
+                    break;
+            }
         }
 
         /// <summary>
@@ -1432,14 +1459,16 @@ namespace GRBL
             return bool.Parse(rxData.Split(':', ']')[2]);
         }
 
-        private void SetZHeight(string rxData)
+        private void SetZHeight()
         {
+            ProbeInProgress = false;
             SendLine(string.Format("G10{0}L20Z{1}", GetWorkCoordinateSpace(CurrentWCS), PlateHeight), true);
 
             if (ProbeMoveUpAfterDistance < 0)
                 ProbeMoveUpAfterDistance = -ProbeMoveUpAfterDistance;
 
-            SendLine(string.Format("G1Z{0}F100", ProbeMoveUpAfterDistance), true);
+            SendLine("G04P1", true);
+            SendLine(string.Format("G1Z{0}F200", ProbeMoveUpAfterDistance), true);
         }
 
         #endregion
