@@ -114,6 +114,7 @@
             this.label9 = new System.Windows.Forms.Label();
             this.labelSpindleRPM = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
+            this.labelPositioning = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox_moveButtons.SuspendLayout();
             this.SuspendLayout();
@@ -1018,11 +1019,22 @@
             this.label16.TabIndex = 70;
             this.label16.Text = "S";
             // 
+            // labelPositioning
+            // 
+            this.labelPositioning.AutoSize = true;
+            this.labelPositioning.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelPositioning.Location = new System.Drawing.Point(326, 297);
+            this.labelPositioning.Name = "labelPositioning";
+            this.labelPositioning.Size = new System.Drawing.Size(114, 20);
+            this.labelPositioning.TabIndex = 38;
+            this.labelPositioning.Text = "Positioning: *";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(748, 705);
+            this.Controls.Add(this.labelPositioning);
             this.Controls.Add(this.labelSpindleRPM);
             this.Controls.Add(this.label16);
             this.Controls.Add(this.btn_touchThePlate);
@@ -1177,6 +1189,7 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label labelSpindleRPM;
         private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.Label labelPositioning;
     }
 }
 

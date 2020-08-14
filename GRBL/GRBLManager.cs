@@ -34,6 +34,7 @@ namespace GRBL
 
             ScannedGRBLSettings = new List<GRBLSetting>();
             MessagesList = new List<MessageInfo>();
+            ProbeSteps = new List<string>();
         }
 
         #region Console
@@ -148,6 +149,7 @@ namespace GRBL
                 queryTimer.Start();
 
                 SetCoordinateSystem(eP.P1);
+                AbsoluteMode();
             }
             catch(Exception ex)
             {
@@ -184,6 +186,12 @@ namespace GRBL
 
                 if(sendToConsole && !CheckInProgress)
                     LineToConsole(FormattingLine(line));
+
+                //Update current positioning mode
+                if (line.Contains("G90"))
+                    Positioning = ePositioning.Absolute;
+                else if(line.Contains("G91"))
+                    Positioning = ePositioning.Incremental;
             }
         }
 
@@ -969,6 +977,8 @@ namespace GRBL
         public float CurrentFeedRate = 0.0f;
         public float currentSpindleSpeed = 0.0f;
 
+        public ePositioning Positioning = ePositioning.Absolute;
+
         public float OverrideFeedRate = 100;
         public float OverrideRapid = 100;
         public float OverrideSpindle = 100;
@@ -1097,12 +1107,22 @@ namespace GRBL
         /// <param name="G0">move with G0 or G1 ?</param>
         /// <param name="distance">distance to be moved, can also be negative value</param>
         /// <param name="feedRate">specify feed rate if G1 is used</param>
-        public void MoveSingleAxis(eAxis axis, bool G0, float distance, int feedRate)
+        public void MoveSingleAxis(eAxis axis, bool G0, bool incremental, float distance, int feedRate)
         {
-            if(G0)
-                SendLine(string.Format("G0G91{0}{1}", axis.ToString(), Converters.DotToGRBL(distance)), true);
+            if(incremental)
+            {
+                if (G0)
+                    SendLine(string.Format("G0G91{0}{1}", axis.ToString(), Converters.DotToGRBL(distance)), true);
+                else
+                    SendLine(string.Format("G1G91{0}{1}F{2}", axis.ToString(), Converters.DotToGRBL(distance), feedRate), true);
+            }
             else
-                SendLine(string.Format("G1G91{0}{1}F{2}", axis.ToString(), Converters.DotToGRBL(distance), feedRate), true);
+            {
+                if (G0)
+                    SendLine(string.Format("G0G90{0}{1}", axis.ToString(), Converters.DotToGRBL(distance)), true);
+                else
+                    SendLine(string.Format("G1G90{0}{1}F{2}", axis.ToString(), Converters.DotToGRBL(distance), feedRate), true);
+            }
         }
 
         /// <summary>
@@ -1112,12 +1132,22 @@ namespace GRBL
         /// <param name="distanceX">distance to be moved along X axis, can also be negative value</param>
         /// <param name="distanceY">distance to be moved along Y axis, can also be negative value</param>
         /// <param name="feedRate">specify feed rate if G1 is used</param>
-        public void MoveTwoAxis(bool G0, float distanceX, float distanceY, int feedRate)
+        public void MoveTwoAxis(bool G0, bool incremental, float distanceX, float distanceY, int feedRate)
         {
-            if (G0)
-                SendLine(string.Format("G0G91X{0}Y{1}", Converters.DotToGRBL(distanceX), Converters.DotToGRBL(distanceY)), true);
+            if(incremental)
+            {
+                if (G0)
+                    SendLine(string.Format("G0G91X{0}Y{1}", Converters.DotToGRBL(distanceX), Converters.DotToGRBL(distanceY)), true);
+                else
+                    SendLine(string.Format("G1G91X{0}Y{1}F{2}", Converters.DotToGRBL(distanceX), Converters.DotToGRBL(distanceY), feedRate), true);
+            }
             else
-                SendLine(string.Format("G1G91X{0}Y{1}F{2}", Converters.DotToGRBL(distanceX), Converters.DotToGRBL(distanceY), feedRate), true);
+            {
+                if (G0)
+                    SendLine(string.Format("G0G90X{0}Y{1}", Converters.DotToGRBL(distanceX), Converters.DotToGRBL(distanceY)), true);
+                else
+                    SendLine(string.Format("G1G90X{0}Y{1}F{2}", Converters.DotToGRBL(distanceX), Converters.DotToGRBL(distanceY), feedRate), true);
+            }
         }
 
         /// <summary>
@@ -1126,7 +1156,7 @@ namespace GRBL
         /// <param name="axis">axis to move</param>
         public void MoveToZero_SingleAxis(eAxis axis)
         {
-            SendLine(string.Format("G0{0}0", axis), true);
+            SendLine(string.Format("G0G90{0}0", axis), true);
         }
 
         /// <summary>
@@ -1135,6 +1165,22 @@ namespace GRBL
         public void MoveToZero_TwoAxis()
         {
             SendLine("G0X0Y0", true);
+        }
+
+        /// <summary>
+        /// G90
+        /// </summary>
+        public void AbsoluteMode()
+        {
+            SendLine("G90", true);
+        }
+
+        /// <summary>
+        /// G91
+        /// </summary>
+        public void IncrementalMode()
+        {
+            SendLine("G91", true);
         }
 
         #endregion
@@ -1386,46 +1432,43 @@ namespace GRBL
         private int TouchCounter = 0;
         public bool ProbeInProgress { get; private set; } = false;
 
+        public List<string> ProbeSteps;
+
         /// <summary>
         /// Probe command. Find workpiece top surface.
         /// </summary>
         /// <param name="distance">How far down Z axis will move ?</param>
         /// <param name="feedRate">How fast Z axis will move ?</param>
         /// <param name="plateHeight">Plate height is needed to set correct Z height.</param>
-        public void ToutchThePlate(float distance, int feedRate, float plateHeight, float moveUpDistance)
+        public void ToutchThePlate(float plateHeight, float moveUpDistance)
         {
             PlateHeight = plateHeight;
             ProbeMoveUpAfterDistance = moveUpDistance;
             TouchCounter = 0;
-
             ProbeInProgress = true;
 
-            SendLine(string.Format("G38.2Z{0}F{1}", distance, feedRate), true);
+            SendLine(ProbeSteps[0], true);
         }
 
         private void ProbeNextStep()
         {
             TouchCounter++;
 
-            if (TouchCounter > 2)
-            {
+            if (TouchCounter >= ProbeSteps.Count)
                 SetZHeight();
-                return;
-            }
+            else
+                SendLine(ProbeSteps[TouchCounter], true);
+        }
 
-            switch(TouchCounter)
-            {
-                case 1:
-                    SendLine("G04P1", true);
-                    SendLine("G1G91Z3F60", true);
-                    SendLine("G38.2Z-5F60", true);
-                    break;
-                case 2:
-                    SendLine("G04P1", true);
-                    SendLine("G1G91Z1F50", true);
-                    SendLine("G38.2Z-5F15", true);
-                    break;
-            }
+        private void SetZHeight()
+        {
+            ProbeInProgress = false;
+            SendLine(string.Format("G10{0}L20Z{1}", GetWorkCoordinateSpace(CurrentWCS), PlateHeight), true);
+
+            if (ProbeMoveUpAfterDistance < 0)
+                ProbeMoveUpAfterDistance = -ProbeMoveUpAfterDistance;
+
+            SendLine(string.Format("G1Z{0}F200", ProbeMoveUpAfterDistance), true);
         }
 
         /// <summary>
@@ -1457,18 +1500,6 @@ namespace GRBL
         private bool WasProbeSuccessful(string rxData)
         {
             return bool.Parse(rxData.Split(':', ']')[2]);
-        }
-
-        private void SetZHeight()
-        {
-            ProbeInProgress = false;
-            SendLine(string.Format("G10{0}L20Z{1}", GetWorkCoordinateSpace(CurrentWCS), PlateHeight), true);
-
-            if (ProbeMoveUpAfterDistance < 0)
-                ProbeMoveUpAfterDistance = -ProbeMoveUpAfterDistance;
-
-            SendLine("G04P1", true);
-            SendLine(string.Format("G1Z{0}F200", ProbeMoveUpAfterDistance), true);
         }
 
         #endregion

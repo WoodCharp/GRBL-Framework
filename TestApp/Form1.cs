@@ -46,6 +46,12 @@ namespace TestApp
 
             GRBLFramework.joggingKnob = joggingKnob1;
             GRBLFramework.InitializeJoggingKnob();
+
+            GRBLFramework.ProbeSteps.Add("G38.2 Z-10 F100");
+            GRBLFramework.ProbeSteps.Add("G38.4 Z2 F100");
+            GRBLFramework.ProbeSteps.Add("G38.2 Z-4 F50");
+            GRBLFramework.ProbeSteps.Add("G38.4 Z1 F50");
+            GRBLFramework.ProbeSteps.Add("G38.2 Z-2 F20");
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -67,6 +73,8 @@ namespace TestApp
             l_wcoX.Text = GRBLFramework.WCO.X.ToString();
             l_wcoY.Text = GRBLFramework.WCO.Y.ToString();
             l_wcoZ.Text = GRBLFramework.WCO.Z.ToString();
+
+            labelPositioning.Text = GRBLFramework.Positioning == ePositioning.Absolute ? "Positioning: Absolute" : "Positioning: Incremental";
 
             l_currentFeedRate.Text = GRBLFramework.CurrentFeedRate.ToString();
             labelSpindleRPM.Text = GRBLFramework.currentSpindleSpeed.ToString();
@@ -268,7 +276,7 @@ namespace TestApp
 
         private void btn_touchThePlate_Click(object sender, EventArgs e)
         {
-            GRBLFramework.ToutchThePlate(-10.0f, 100, 10.0f, 10.0f);
+            GRBLFramework.ToutchThePlate(10.0f, 10.0f);
         }
 
         #endregion
@@ -337,13 +345,13 @@ namespace TestApp
 
         private void btn_Xp_Click(object sender, EventArgs e)
         {
-            GRBLFramework.MoveSingleAxis(eAxis.X, radioButton_g0.Checked, 
+            GRBLFramework.MoveSingleAxis(eAxis.X, radioButton_g0.Checked, true,
                 float.Parse(Converters.DotToFloat(textBox_distance.Text)), int.Parse(textBox_feedRate.Text));
         }
 
         private void btn_XpYp_Click(object sender, EventArgs e)
         {
-            GRBLFramework.MoveTwoAxis(radioButton_g0.Checked,
+            GRBLFramework.MoveTwoAxis(radioButton_g0.Checked, true,
                 float.Parse(Converters.DotToFloat(textBox_distance.Text)),
                 float.Parse(Converters.DotToFloat(textBox_distance.Text)),
                 int.Parse(textBox_feedRate.Text));
@@ -351,13 +359,13 @@ namespace TestApp
 
         private void btn_Yp_Click(object sender, EventArgs e)
         {
-            GRBLFramework.MoveSingleAxis(eAxis.Y, radioButton_g0.Checked,
+            GRBLFramework.MoveSingleAxis(eAxis.Y, radioButton_g0.Checked, true,
                 float.Parse(Converters.DotToFloat(textBox_distance.Text)), int.Parse(textBox_feedRate.Text));
         }
 
         private void btn_XmYp_Click(object sender, EventArgs e)
         {
-            GRBLFramework.MoveTwoAxis(radioButton_g0.Checked,
+            GRBLFramework.MoveTwoAxis(radioButton_g0.Checked, true,
                 -float.Parse(Converters.DotToFloat(textBox_distance.Text)),
                 float.Parse(Converters.DotToFloat(textBox_distance.Text)),
                 int.Parse(textBox_feedRate.Text));
@@ -365,13 +373,13 @@ namespace TestApp
 
         private void btn_Xm_Click(object sender, EventArgs e)
         {
-            GRBLFramework.MoveSingleAxis(eAxis.X, radioButton_g0.Checked,
+            GRBLFramework.MoveSingleAxis(eAxis.X, radioButton_g0.Checked, true,
                 -float.Parse(Converters.DotToFloat(textBox_distance.Text)), int.Parse(textBox_feedRate.Text));
         }
 
         private void btn_XmYm_Click(object sender, EventArgs e)
         {
-            GRBLFramework.MoveTwoAxis(radioButton_g0.Checked,
+            GRBLFramework.MoveTwoAxis(radioButton_g0.Checked, true,
                 -float.Parse(Converters.DotToFloat(textBox_distance.Text)),
                 -float.Parse(Converters.DotToFloat(textBox_distance.Text)),
                 int.Parse(textBox_feedRate.Text));
@@ -379,13 +387,13 @@ namespace TestApp
 
         private void btn_Ym_Click(object sender, EventArgs e)
         {
-            GRBLFramework.MoveSingleAxis(eAxis.Y, radioButton_g0.Checked,
+            GRBLFramework.MoveSingleAxis(eAxis.Y, radioButton_g0.Checked, true,
                 -float.Parse(Converters.DotToFloat(textBox_distance.Text)), int.Parse(textBox_feedRate.Text));
         }
 
         private void btn_XpYm_Click(object sender, EventArgs e)
         {
-            GRBLFramework.MoveTwoAxis(radioButton_g0.Checked,
+            GRBLFramework.MoveTwoAxis(radioButton_g0.Checked, true,
                 float.Parse(Converters.DotToFloat(textBox_distance.Text)),
                 -float.Parse(Converters.DotToFloat(textBox_distance.Text)),
                 int.Parse(textBox_feedRate.Text));
@@ -393,13 +401,13 @@ namespace TestApp
 
         private void btn_Zp_Click(object sender, EventArgs e)
         {
-            GRBLFramework.MoveSingleAxis(eAxis.Z, radioButton_g0.Checked,
+            GRBLFramework.MoveSingleAxis(eAxis.Z, radioButton_g0.Checked, true,
                 float.Parse(Converters.DotToFloat(textBox_distance.Text)), int.Parse(textBox_feedRate.Text));
         }
 
         private void btn_Zm_Click(object sender, EventArgs e)
         {
-            GRBLFramework.MoveSingleAxis(eAxis.Z, radioButton_g0.Checked,
+            GRBLFramework.MoveSingleAxis(eAxis.Z, radioButton_g0.Checked, true,
                 -float.Parse(Converters.DotToFloat(textBox_distance.Text)), int.Parse(textBox_feedRate.Text));
         }
 

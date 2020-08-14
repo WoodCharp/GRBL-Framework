@@ -46,4 +46,10 @@
         P5,
         P6
     }
+
+    public enum ePositioning
+    {
+        Absolute,
+        Incremental
+    }
 }
