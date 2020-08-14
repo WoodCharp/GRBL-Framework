@@ -46,12 +46,6 @@ namespace TestApp
 
             GRBLFramework.joggingKnob = joggingKnob1;
             GRBLFramework.InitializeJoggingKnob();
-
-            GRBLFramework.ProbeSteps.Add("G38.2 Z-10 F100");
-            GRBLFramework.ProbeSteps.Add("G38.4 Z2 F100");
-            GRBLFramework.ProbeSteps.Add("G38.2 Z-4 F50");
-            GRBLFramework.ProbeSteps.Add("G38.4 Z1 F50");
-            GRBLFramework.ProbeSteps.Add("G38.2 Z-2 F20");
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -276,7 +270,7 @@ namespace TestApp
 
         private void btn_touchThePlate_Click(object sender, EventArgs e)
         {
-            GRBLFramework.ToutchThePlate(10.0f, 10.0f);
+
         }
 
         #endregion

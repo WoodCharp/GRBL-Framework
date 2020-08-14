@@ -34,7 +34,6 @@ namespace GRBL
 
             ScannedGRBLSettings = new List<GRBLSetting>();
             MessagesList = new List<MessageInfo>();
-            ProbeSteps = new List<string>();
         }
 
         #region Console
@@ -233,11 +232,6 @@ namespace GRBL
 
         private void DataReceived(object sender, EventArgs e)
         {
-            if (RX_DATA.StartsWith("[PRB") && ProbeInProgress)
-            {
-                ProbeNextStep();
-            }
-
             if (CheckInProgress && MachineState == eMachineState.Check && SendingFile)
             {
                 if (RX_DATA[0] != '<')
@@ -395,8 +389,16 @@ namespace GRBL
             }
 
             //MSG
-            if (RX_DATA.Length > 0 && RX_DATA[0] == '[' && !ProbeInProgress)
+            if (RX_DATA.Length > 0 && RX_DATA[0] == '[')
             {
+                if (RX_DATA.StartsWith("[PRB"))
+                {
+                    ProbeResult = RX_DATA;
+
+                    if (ProbeResultAction != null)
+                        ProbeResultAction.Invoke();
+                }
+
                 if (RX_DATA.Contains("MSG"))
                 {
                     if (RX_DATA.Contains("Pgm End"))
@@ -681,6 +683,32 @@ namespace GRBL
                     return "G59";
                 default:
                     return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Returns WCS P version of G54-G59
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public string GetWorkCoordinateSpaceP(int index)
+        {
+            switch(index)
+            {
+                case 0:
+                    return eP.P1.ToString();
+                case 1:
+                    return eP.P2.ToString();
+                case 2:
+                    return eP.P3.ToString();
+                case 3:
+                    return eP.P4.ToString();
+                case 4:
+                    return eP.P5.ToString();
+                case 5:
+                    return eP.P6.ToString();
+                default:
+                    return eP.P1.ToString();
             }
         }
 
@@ -1428,48 +1456,8 @@ namespace GRBL
 
         #region Probe
 
-        private float PlateHeight = 0.0f, ProbeMoveUpAfterDistance = 10.0f;
-        private int TouchCounter = 0;
-        public bool ProbeInProgress { get; private set; } = false;
-
-        public List<string> ProbeSteps;
-
-        /// <summary>
-        /// Probe command. Find workpiece top surface.
-        /// </summary>
-        /// <param name="distance">How far down Z axis will move ?</param>
-        /// <param name="feedRate">How fast Z axis will move ?</param>
-        /// <param name="plateHeight">Plate height is needed to set correct Z height.</param>
-        public void ToutchThePlate(float plateHeight, float moveUpDistance)
-        {
-            PlateHeight = plateHeight;
-            ProbeMoveUpAfterDistance = moveUpDistance;
-            TouchCounter = 0;
-            ProbeInProgress = true;
-
-            SendLine(ProbeSteps[0], true);
-        }
-
-        private void ProbeNextStep()
-        {
-            TouchCounter++;
-
-            if (TouchCounter >= ProbeSteps.Count)
-                SetZHeight();
-            else
-                SendLine(ProbeSteps[TouchCounter], true);
-        }
-
-        private void SetZHeight()
-        {
-            ProbeInProgress = false;
-            SendLine(string.Format("G10{0}L20Z{1}", GetWorkCoordinateSpace(CurrentWCS), PlateHeight), true);
-
-            if (ProbeMoveUpAfterDistance < 0)
-                ProbeMoveUpAfterDistance = -ProbeMoveUpAfterDistance;
-
-            SendLine(string.Format("G1Z{0}F200", ProbeMoveUpAfterDistance), true);
-        }
+        public Action ProbeResultAction;
+        public string ProbeResult;
 
         /// <summary>
         /// Returns probe value from: [PRB:0.000,0.000,0.000:0]
@@ -1477,7 +1465,7 @@ namespace GRBL
         /// <param name="rxData"></param>
         /// <param name="axis"></param>
         /// <returns></returns>
-        private float GetProbeValue(string rxData, eAxis axis)
+        public float GetProbeValue(string rxData, eAxis axis)
         {
             switch(axis)
             {
@@ -1497,7 +1485,7 @@ namespace GRBL
         /// </summary>
         /// <param name="rxData"></param>
         /// <returns></returns>
-        private bool WasProbeSuccessful(string rxData)
+        public bool WasProbeSuccessful(string rxData)
         {
             return bool.Parse(rxData.Split(':', ']')[2]);
         }
