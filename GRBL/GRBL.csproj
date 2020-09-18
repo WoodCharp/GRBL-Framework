@@ -44,7 +44,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CheckItem.cs" />
+    <Compile Include="Controls\G_CODE.cs" />
     <Compile Include="Controls\JoggingKnob.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Visualizer.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="GetValues.cs" />

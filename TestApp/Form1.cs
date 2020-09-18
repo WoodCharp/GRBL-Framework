@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,7 +34,7 @@ namespace TestApp
             ofd = new OpenFileDialog();
             ofd.Multiselect = false;
             ofd.Title = "Select file";
-            ofd.Filter = "All Files(*.*)|*.*";
+            ofd.Filter = "NC (*.nc)|*.nc";
 
 
             GRBLFramework.ConsoleBox = richTextBox_console;
@@ -78,6 +79,8 @@ namespace TestApp
             l_ovSpindle.Text = GRBLFramework.OverrideSpindle.ToString();
 
             label_machineStatus.Text = GRBLFramework.MachineState.ToString();
+
+            visualizer1.UpdatePosition(new Point((int)GRBLFramework.WPos.X, (int)GRBLFramework.WPos.Y));
 
             if(GRBLFramework.SendingFile)
             {
@@ -428,6 +431,10 @@ namespace TestApp
             if(ofd.ShowDialog() == DialogResult.OK)
             {
                 GRBLFramework.PrepareFile(ofd.FileName);
+
+                List<string> lines = File.ReadLines(ofd.FileName).ToList();
+                visualizer1.FileLines = lines;
+                visualizer1.ReadLines();
 
                 btn_sendFile.Enabled = true;
             }

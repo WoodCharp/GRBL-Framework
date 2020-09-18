@@ -110,11 +110,12 @@
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.label_percentage = new System.Windows.Forms.Label();
             this.btn_touchThePlate = new System.Windows.Forms.Button();
-            this.joggingKnob1 = new GRBL.Controls.JoggingKnob();
             this.label9 = new System.Windows.Forms.Label();
             this.labelSpindleRPM = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
             this.labelPositioning = new System.Windows.Forms.Label();
+            this.visualizer1 = new GRBL.Controls.Visualizer();
+            this.joggingKnob1 = new GRBL.Controls.JoggingKnob();
             this.groupBox1.SuspendLayout();
             this.groupBox_moveButtons.SuspendLayout();
             this.SuspendLayout();
@@ -152,8 +153,6 @@
             // 
             // richTextBox_console
             // 
-            this.richTextBox_console.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.richTextBox_console.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.richTextBox_console.Location = new System.Drawing.Point(326, 466);
             this.richTextBox_console.Name = "richTextBox_console";
@@ -164,7 +163,6 @@
             // 
             // tb_sendCommand
             // 
-            this.tb_sendCommand.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.tb_sendCommand.Enabled = false;
             this.tb_sendCommand.Location = new System.Drawing.Point(326, 670);
             this.tb_sendCommand.Name = "tb_sendCommand";
@@ -174,7 +172,6 @@
             // 
             // btn_send
             // 
-            this.btn_send.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btn_send.Enabled = false;
             this.btn_send.Location = new System.Drawing.Point(661, 670);
             this.btn_send.Name = "btn_send";
@@ -980,15 +977,6 @@
             this.btn_touchThePlate.UseVisualStyleBackColor = true;
             this.btn_touchThePlate.Click += new System.EventHandler(this.btn_touchThePlate_Click);
             // 
-            // joggingKnob1
-            // 
-            this.joggingKnob1.Enabled = false;
-            this.joggingKnob1.Location = new System.Drawing.Point(576, 297);
-            this.joggingKnob1.Name = "joggingKnob1";
-            this.joggingKnob1.Size = new System.Drawing.Size(160, 160);
-            this.joggingKnob1.TabIndex = 35;
-            this.joggingKnob1.Text = "joggingKnob1";
-            // 
             // label9
             // 
             this.label9.AutoSize = true;
@@ -1029,11 +1017,40 @@
             this.labelPositioning.TabIndex = 38;
             this.labelPositioning.Text = "Positioning: *";
             // 
+            // visualizer1
+            // 
+            this.visualizer1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.visualizer1.BackgroundColor = System.Drawing.Color.WhiteSmoke;
+            this.visualizer1.DimensionColor = System.Drawing.Color.Gray;
+            this.visualizer1.DrawColor = System.Drawing.Color.Black;
+            this.visualizer1.FileLines = null;
+            this.visualizer1.Location = new System.Drawing.Point(742, 9);
+            this.visualizer1.Name = "visualizer1";
+            this.visualizer1.PathColor = System.Drawing.Color.Blue;
+            this.visualizer1.Size = new System.Drawing.Size(701, 684);
+            this.visualizer1.TabIndex = 72;
+            this.visualizer1.Text = "visualizer1";
+            this.visualizer1.ToolColor = System.Drawing.Color.DarkRed;
+            this.visualizer1.ToolDiameter = 6;
+            this.visualizer1.VisualizerScale = 10;
+            // 
+            // joggingKnob1
+            // 
+            this.joggingKnob1.Enabled = false;
+            this.joggingKnob1.Location = new System.Drawing.Point(576, 297);
+            this.joggingKnob1.Name = "joggingKnob1";
+            this.joggingKnob1.Size = new System.Drawing.Size(160, 160);
+            this.joggingKnob1.TabIndex = 35;
+            this.joggingKnob1.Text = "joggingKnob1";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(748, 705);
+            this.ClientSize = new System.Drawing.Size(1455, 705);
+            this.Controls.Add(this.visualizer1);
             this.Controls.Add(this.labelPositioning);
             this.Controls.Add(this.labelSpindleRPM);
             this.Controls.Add(this.label16);
@@ -1190,6 +1207,7 @@
         private System.Windows.Forms.Label labelSpindleRPM;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.Label labelPositioning;
+        private GRBL.Controls.Visualizer visualizer1;
     }
 }
 
